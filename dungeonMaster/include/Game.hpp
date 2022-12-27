@@ -22,7 +22,10 @@ public:
 
     void createMap();
 
+    void exitGame();
+
 private:
+    bool                                 _done = false;
     FreeflyCamera                        _camera;
     glimac::FilePath                     _filePath;
     float                                _windowWidth;

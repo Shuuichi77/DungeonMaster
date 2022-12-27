@@ -1,6 +1,7 @@
 #include "../include/Game.hpp"
 
 #include <glm/glm.hpp>
+#include <algorithm>
 #include <iostream>
 #include <glimac/common.hpp>
 #include <utility>
@@ -18,60 +19,41 @@ Game::Game(glimac::FilePath filePath, float windowWidth, float windowHeight)
         , _windowWidth(windowWidth)
         , _windowHeight(windowHeight)
         , _windowManager(windowWidth, windowHeight, "Dungeon Master")
-        , _cameraManager(_camera, _windowManager, _map) {}
+        , _cameraManager(_camera, _windowManager, _map, &_done) {}
 
 
 void Game::createMap()
 {
-    vec3          startingPos = vec3(1, 0, 0);
+    vec3          startingPos = vec3(2, 0, 0);
     DirectionType startingDir = DirectionType::NORTH;
 
     _camera.setPosition(startingPos);
     _camera.setCameraDirection(startingDir);
 
     // Faire en sorte qu'en lisant la map, si un mur est entouré d'autres murs, on ne le met pas dans le tableau
-    std::vector<ObjectType> row1 = {
-            WALL, // (0, 0)
-            EMPTY, // (1, 0)
-            WALL, // (2, 0)
-            WALL, // (3, 0)
+    _map = {
+            { WALL, WALL,  EMPTY, WALL,  WALL,  WALL },
+            { WALL, WALL,  EMPTY, WALL,  EMPTY, WALL },
+            { WALL, EMPTY, EMPTY, EMPTY, EMPTY, WALL },
+            { WALL, WALL,  EMPTY, WALL,  EMPTY, WALL,  WALL },
+            { WALL, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, WALL },
+            { WALL, EMPTY, WALL,  WALL,  EMPTY, WALL },
+            { WALL, WALL,  WALL,  WALL,  EXIT,  WALL },
     };
 
-    std::vector<ObjectType> row2 = {
-            WALL, // (0, 1)
-            EMPTY, // (1, 1)
-            WALL, // (2, 1)
-            WALL, // (3, 1)
-            WALL, // (3, 1)
-            WALL, // (3, 1)
-    };
 
-    std::vector<ObjectType> row3 = {
-            WALL, // (0, 2)
-            EMPTY, // (1, 2)
-            EMPTY, // (2, 2)
-            EMPTY, // (3, 2)
-            EMPTY, // (3, 2)
-            EMPTY, // (3, 2)
-    };
+    int nbMaxWall = _map.size() * _map.size();
 
-    std::vector<ObjectType> row4 = {
-            WALL,
-            WALL,
-            WALL,
-            WALL,
-            WALL,
-            WALL,
-    };
-
-    _map.push_back(row1);
-    _map.push_back(row2);
-    _map.push_back(row3);
-    _map.push_back(row4);
+    for (int i = 0; i < nbMaxWall; ++i)
+    {
+        _drawingProgram->addRandomWallTexture();
+    }
 }
 
 int Game::run()
 {
+    srand(time(nullptr));
+
     // Initialize glew for OpenGL3+ support
     GLenum glewInitError = glewInit();
     if (GLEW_OK != glewInitError)
@@ -134,11 +116,7 @@ int Game::run()
 
     createMap();
 
-
-    bool done = false;
-
-
-    while (!done)
+    while (!_done)
     {
         _cameraManager.moveCamera();
 
@@ -148,7 +126,7 @@ int Game::run()
         {
             if (e.type == SDL_QUIT)
             {
-                done = true; // Leave the loop after this iteration
+                _done = true; // Leave the loop after this iteration
             }
         }
 
@@ -161,16 +139,6 @@ int Game::run()
 
         // First Wall
         _drawingProgram->drawMap(_map, _map[0].size(), _map.size());
-//        _drawingProgram->drawWall(0, 0, 1, DirectionType::NORTH);
-//        _drawingProgram->drawWall(0, 0, 1, DirectionType::WEST);
-//        _drawingProgram->drawWall(0, 0, 1, DirectionType::EAST);
-//
-//
-//        _drawingProgram->drawWall(0, 0, -1, DirectionType::SOUTH);
-//
-//
-//        _drawingProgram->drawFloor(0, 0, 1);
-
 
         glBindVertexArray(0);
         _windowManager.swapBuffers();
@@ -179,4 +147,9 @@ int Game::run()
     _textureManager->freeTextures();
 
     return EXIT_SUCCESS;
+}
+
+void Game::exitGame()
+{
+    _done = true;
 }

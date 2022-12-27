@@ -7,9 +7,14 @@ TextureManager::TextureManager(const glimac::FilePath &applicationPath)
         : _directory(applicationPath.dirPath() + "assets/textures" + "/")
 {
     glEnable(GL_DEPTH_TEST);
+//    glDepthFunc(GL_LESS);
 
-    loadTextureFromFile(WALL_TEXTURE_NAME, "wall.jpg");
-    loadTextureFromFile(FLOOR_TEXTURE_NAME, "floor.png");
+    loadTextureFromFile(WALL_TEXTURE_1, "wall_01.png");
+    loadTextureFromFile(WALL_TEXTURE_2, "wall_02.png");
+    loadTextureFromFile(WALL_TEXTURE_3, "wall_03.png");
+
+    loadTextureFromFile(FLOOR_TEXTURE, "floor_01.png");
+    loadTextureFromFile(EXIT_TEXTURE, "stairs.png");
 }
 
 GLuint TextureManager::getTexture(const std::string &textureName) const

@@ -4,16 +4,16 @@
 #include "../include/Utils.hpp"
 
 CameraManager::CameraManager(FreeflyCamera &camera, const glimac::SDLWindowManager &windowManager,
-                             const std::vector<std::vector<ObjectType>> &map)
+                             const std::vector<std::vector<ObjectType>> &map, bool *done)
         : _camera(camera)
         , _windowManager(windowManager)
-        , _map(map) {}
+        , _map(map)
+        , _done(*done) {}
 
 void CameraManager::moveCamera()
 {
     if (!_cameraCanMove && canMoveAgain())
     {
-        std::cout << "Current Position: " << _camera.getPosition() << "\n" << std::endl;
         _cameraCanMove = true;
     }
 
@@ -64,7 +64,6 @@ void CameraManager::moveCamera()
             if (canMoveTowardDirection(DirectionType::EAST))
             {
                 _camera.moveLeft(-1.f);
-
             }
             _timeMoved     = std::chrono::system_clock::now();
             _cameraCanMove = false;
@@ -85,18 +84,20 @@ bool CameraManager::canMoveTowardDirection(DirectionType nextMovementDirectionTy
     int i = floatToint(-nextCameraPos.z);
     int j = floatToint(nextCameraPos.x);
 
-    std::cout << _map.size() << ", " << _map[i].size() << std::endl;
-
     if (isOutOfMap(i, j))
     {
-        std::cout << "OUT OF MAP" << std::endl;
         return false;
     }
 
     if (_map[i][j] == ObjectType::WALL)
     {
-        std::cout << "WALL" << std::endl;
         return false;
+    }
+
+    if (_map[i][j] == ObjectType::EXIT)
+    {
+        _done = true;
+        return true;
     }
 
     return true;

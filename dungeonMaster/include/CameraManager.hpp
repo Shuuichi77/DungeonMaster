@@ -13,11 +13,12 @@ class CameraManager
 {
 public:
     CameraManager(FreeflyCamera &camera, const glimac::SDLWindowManager &windowManager,
-                  const std::vector<std::vector<ObjectType>> &map);
+                  const std::vector<std::vector<ObjectType>> &map, bool *done);
 
     void moveCamera();
 
 private:
+    bool                                               &_done;
     bool                                               _cameraCanMove = true;
     FreeflyCamera                                      &_camera;
     const std::vector<std::vector<ObjectType>>         &_map;

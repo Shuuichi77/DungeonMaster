@@ -17,6 +17,8 @@ DrawingProgram::DrawingProgram(const glimac::FilePath &applicationPath, const st
     _uMVMatrix     = glGetUniformLocation(_program.getGLId(), "uMVMatrix");
     _uNormalMatrix = glGetUniformLocation(_program.getGLId(), "uNormalMatrix");
     _uTexture      = glGetUniformLocation(_program.getGLId(), "uTexture");
+
+    _uLightPosition_vs = glGetUniformLocation(_program.getGLId(), "_uLightPosition_vs");
 }
 
 void DrawingProgram::use()
@@ -26,6 +28,9 @@ void DrawingProgram::use()
 
 void DrawingProgram::drawMap(const std::vector<std::vector<ObjectType>> &map, int width, int height)
 {
+    int nbWall = 0;
+    glUniform3fv(_uLightPosition_vs, 1, glm::value_ptr(_camera.getViewMatrix() * glm::vec4(_camera.getPosition(), 1)));
+
     for (int i = 0; i < map.size(); ++i)
     {
         for (int j = 0; j < map[i].size(); ++j)
@@ -35,28 +40,33 @@ void DrawingProgram::drawMap(const std::vector<std::vector<ObjectType>> &map, in
                 // Check North
                 if (i + 1 < height && map[i + 1][j] != ObjectType::WALL)
                 {
-                    drawWall((float) j, 0, (float) i, DirectionType::NORTH);
+                    drawWall((float) j, 0, (float) i, DirectionType::NORTH, nbWall++);
                 }
 
                 // Check South
                 if (i - 1 > 0 && map[i - 1][j] != ObjectType::WALL)
                 {
-                    drawWall((float) j, 0, (float) i, DirectionType::SOUTH);
+                    drawWall((float) j, 0, (float) i, DirectionType::SOUTH, nbWall++);
                 }
                 // Check East
                 if (j + 1 < width && map[i][j + 1] != ObjectType::WALL)
                 {
-                    drawWall((float) j, 0, (float) i, DirectionType::EAST);
+                    drawWall((float) j, 0, (float) i, DirectionType::EAST, nbWall++);
                 }
                 // Check West
                 if (j - 1 > 0 && map[i][j - 1] != ObjectType::WALL)
                 {
-                    drawWall((float) j, 0, (float) i, DirectionType::WEST);
+                    drawWall((float) j, 0, (float) i, DirectionType::WEST, nbWall++);
                 }
             }
             else if (map[i][j] == ObjectType::EMPTY)
             {
-                drawFloor((float) j, 0, (float) i);
+                drawFloorAndCeiling((float) j, 0, (float) i);
+            }
+
+            else if (map[i][j] == ObjectType::EXIT)
+            {
+                drawExit((float) j, 0, (float) i);
             }
         }
     }
@@ -70,9 +80,9 @@ void DrawingProgram::setUniformMatrix(glm::mat4 MVMMatrix)
 }
 
 
-void DrawingProgram::drawWall(float x, float y, float z, DirectionType wallOrientation)
+void DrawingProgram::drawWall(float x, float y, float z, DirectionType wallOrientation, int nbWall)
 {
-    glBindTexture(GL_TEXTURE_2D, _textureManager.getTexture(TextureManager::WALL_TEXTURE_NAME));
+    glBindTexture(GL_TEXTURE_2D, _textureManager.getTexture(_wallsTextures[nbWall]));
     glUniform1i(_uTexture, 0);
 
     glm::mat4 MVMMatrix = glm::mat4(1);
@@ -80,6 +90,7 @@ void DrawingProgram::drawWall(float x, float y, float z, DirectionType wallOrien
     if (wallOrientation == DirectionType::NORTH)
     {
         MVMMatrix = glm::translate(MVMMatrix, glm::vec3(x, y, -z - 0.5f));
+        MVMMatrix = glm::rotate(MVMMatrix, glm::radians(180.f), glm::vec3(0, 1, 0));
     }
     if (wallOrientation == DirectionType::SOUTH)
     {
@@ -88,12 +99,12 @@ void DrawingProgram::drawWall(float x, float y, float z, DirectionType wallOrien
     else if (wallOrientation == DirectionType::WEST)
     {
         MVMMatrix = glm::translate(MVMMatrix, glm::vec3(x - 0.5f, y, -z));
-        MVMMatrix = glm::rotate(MVMMatrix, glm::radians(90.f), glm::vec3(0, 1, 0));
+        MVMMatrix = glm::rotate(MVMMatrix, glm::radians(-90.f), glm::vec3(0, 1, 0));
     }
     else if (wallOrientation == DirectionType::EAST)
     {
         MVMMatrix = glm::translate(MVMMatrix, glm::vec3(x + 0.5f, y, -z));
-        MVMMatrix = glm::rotate(MVMMatrix, glm::radians(-90.f), glm::vec3(0, 1, 0));
+        MVMMatrix = glm::rotate(MVMMatrix, glm::radians(90.f), glm::vec3(0, 1, 0));
     }
 
     MVMMatrix = _camera.getViewMatrix() * MVMMatrix;
@@ -102,19 +113,68 @@ void DrawingProgram::drawWall(float x, float y, float z, DirectionType wallOrien
     glDrawArrays(GL_TRIANGLES, 0, 6);
 }
 
-void DrawingProgram::drawFloor(float x, float y, float z)
+void DrawingProgram::drawFloorAndCeiling(float x, float y, float z)
 {
-    glBindTexture(GL_TEXTURE_2D, _textureManager.getTexture(TextureManager::FLOOR_TEXTURE_NAME));
+    // Floor
+    glBindTexture(GL_TEXTURE_2D, _textureManager.getTexture(TextureManager::FLOOR_TEXTURE));
     glUniform1i(_uTexture, 0);
 
     glm::mat4 MVMMatrix = glm::mat4(1);
-
     MVMMatrix = glm::translate(MVMMatrix, glm::vec3(x, y - 0.5, -z));
+    MVMMatrix = glm::rotate(MVMMatrix, glm::radians(90.f + 180.f), glm::vec3(1, 0, 0));
+    MVMMatrix = _camera.getViewMatrix() * MVMMatrix;
+
+    setUniformMatrix(MVMMatrix);
+    glDrawArrays(GL_TRIANGLES, 0, 6);
+
+    // Ceiling
+    glBindTexture(GL_TEXTURE_2D, _textureManager.getTexture(TextureManager::WALL_TEXTURE_3));
+    glUniform1i(_uTexture, 0);
+
+    MVMMatrix = glm::mat4(1);
+    MVMMatrix = glm::translate(MVMMatrix, glm::vec3(x, y + 0.5, -z));
     MVMMatrix = glm::rotate(MVMMatrix, glm::radians(90.f), glm::vec3(1, 0, 0));
     MVMMatrix = _camera.getViewMatrix() * MVMMatrix;
 
     setUniformMatrix(MVMMatrix);
     glDrawArrays(GL_TRIANGLES, 0, 6);
+}
+
+void DrawingProgram::drawExit(float x, float y, float z)
+{
+    drawFloorAndCeiling(x, y, z);
+
+    // Exit
+    glBindTexture(GL_TEXTURE_2D, _textureManager.getTexture(TextureManager::EXIT_TEXTURE));
+    glUniform1i(_uTexture, 0);
+
+    glm::mat4 MVMMatrix = glm::mat4(1);
+    MVMMatrix = glm::translate(MVMMatrix, glm::vec3(x, y, -z - 0.5));
+    MVMMatrix = _camera.getViewMatrix() * MVMMatrix;
+
+    setUniformMatrix(MVMMatrix);
+    glDrawArrays(GL_TRIANGLES, 0, 6);
+}
+
+void DrawingProgram::drawMonster(float x, float y, float z)
+{
+
+}
+
+void DrawingProgram::addRandomWallTexture()
+{
+    std::string textureName;
+    switch (rand() % 3)
+    {
+        case 0: textureName = TextureManager::WALL_TEXTURE_1;
+            break;
+        case 1: textureName = TextureManager::WALL_TEXTURE_2;
+            break;
+        case 2: textureName = TextureManager::WALL_TEXTURE_3;
+            break;
+    }
+
+    _wallsTextures.emplace_back(textureName);
 }
 
 
