@@ -24,15 +24,12 @@ Game::Game(glimac::FilePath filePath, float windowWidth, float windowHeight)
 
 void Game::createMap()
 {
-    vec3          startingPos = vec3(2, 0, 0);
     DirectionType startingDir = DirectionType::NORTH;
-
-    _camera.setPosition(startingPos);
     _camera.setCameraDirection(startingDir);
 
     // Faire en sorte qu'en lisant la map, si un mur est entouré d'autres murs, on ne le met pas dans le tableau
     _map = {
-            { WALL, WALL,  EMPTY, WALL,  WALL,  WALL },
+            { WALL, WALL,  ENTRY, WALL,  WALL,  WALL },
             { WALL, WALL,  EMPTY, WALL,  EMPTY, WALL },
             { WALL, EMPTY, EMPTY, EMPTY, EMPTY, WALL },
             { WALL, WALL,  EMPTY, WALL,  EMPTY, WALL,  WALL },
@@ -41,12 +38,22 @@ void Game::createMap()
             { WALL, WALL,  WALL,  WALL,  EXIT,  WALL },
     };
 
-
     int nbMaxWall = _map.size() * _map.size();
 
     for (int i = 0; i < nbMaxWall; ++i)
     {
-        _drawingProgram->addRandomWallTexture();
+        _textureManager->addRandomWallTexture();
+    }
+
+    for (int i = 0; i < _map.size(); ++i)
+    {
+        for (int j = 0; j < _map[i].size(); ++j)
+        {
+            if (_map[i][j] == ENTRY)
+            {
+                _camera.setPosition(vec3(j, 0, i));
+            }
+        }
     }
 }
 
@@ -110,9 +117,11 @@ int Game::run()
     glBindVertexArray(0);
 
     _textureManager = make_unique<TextureManager>(_filePath);
+    _modelManager   = make_unique<ModelManager>(_filePath);
     _drawingProgram = make_unique<DrawingProgram>(_filePath, "tex3D.vs.glsl", "tex3D.fs.glsl", _camera, _windowWidth,
-                                                  _windowHeight, *_textureManager);
+                                                  _windowHeight, *_textureManager, *_modelManager);
     _drawingProgram->use();
+
 
     createMap();
 

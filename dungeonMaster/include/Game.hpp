@@ -13,17 +13,6 @@ using namespace std;
 
 class Game
 {
-public:
-    explicit Game(glimac::FilePath filePath, float windowWidth, float windowHeight);
-
-    ~Game() = default;;
-
-    int run();
-
-    void createMap();
-
-    void exitGame();
-
 private:
     bool                                 _done = false;
     FreeflyCamera                        _camera;
@@ -36,4 +25,16 @@ private:
     CameraManager                   _cameraManager;
     std::unique_ptr<TextureManager> _textureManager;
     std::unique_ptr<DrawingProgram> _drawingProgram;
+    std::unique_ptr<ModelManager>   _modelManager;
+
+public:
+    explicit Game(glimac::FilePath filePath, float windowWidth, float windowHeight);
+
+    ~Game() = default;;
+
+    int run();
+
+    void createMap();
+
+    void exitGame();
 };

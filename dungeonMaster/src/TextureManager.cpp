@@ -33,7 +33,6 @@ void TextureManager::freeTextures()
 bool TextureManager::loadTextureFromFile(const char *textureName, const char *imageFile)
 {
     std::unique_ptr<glimac::Image> image = glimac::loadImage(_directory + "/" + imageFile);
-
     if (image == nullptr)
     {
         std::cout << "Error while loading the image from " << imageFile << std::endl;
@@ -53,6 +52,28 @@ bool TextureManager::loadTextureFromFile(const char *textureName, const char *im
 
     return true;
 }
+
+GLuint TextureManager::getWallTexture(int numWall) const
+{
+    return _textures.at(_wallsTextures[numWall]);
+}
+
+void TextureManager::addRandomWallTexture()
+{
+    std::string textureName;
+    switch (rand() % 3)
+    {
+        case 0: textureName = TextureManager::WALL_TEXTURE_1;
+            break;
+        case 1: textureName = TextureManager::WALL_TEXTURE_2;
+            break;
+        case 2: textureName = TextureManager::WALL_TEXTURE_3;
+            break;
+    }
+
+    _wallsTextures.emplace_back(textureName);
+}
+
 
 
 

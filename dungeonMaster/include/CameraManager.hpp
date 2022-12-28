@@ -4,19 +4,12 @@
 #include <glimac/SDLWindowManager.hpp>
 #include <chrono>
 #include <vector>
-#include <unordered_map>
 #include "DirectionType.hpp"
 #include "FreeflyCamera.hpp"
 #include "ObjectType.hpp"
 
 class CameraManager
 {
-public:
-    CameraManager(FreeflyCamera &camera, const glimac::SDLWindowManager &windowManager,
-                  const std::vector<std::vector<ObjectType>> &map, bool *done);
-
-    void moveCamera();
-
 private:
     bool                                               &_done;
     bool                                               _cameraCanMove = true;
@@ -33,4 +26,10 @@ private:
 
     glm::vec3 getNextPosition(DirectionType cameraDirection,
                               DirectionType nextMovementDirectionType);
+
+public:
+    CameraManager(FreeflyCamera &camera, const glimac::SDLWindowManager &windowManager,
+                  const std::vector<std::vector<ObjectType>> &map, bool *done);
+
+    void moveCamera();
 };

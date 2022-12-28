@@ -4,6 +4,7 @@
 
 enum ObjectType
 {
+    ENTRY,
     EMPTY,
     WALL,
     DOOR,

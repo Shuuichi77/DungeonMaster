@@ -4,21 +4,14 @@
 #include <unordered_map>
 #include "GL/glew.h"
 #include <glimac/FilePath.hpp>
+#include <vector>
 
 class TextureManager
 {
-public:
-    explicit TextureManager(const glimac::FilePath &applicationPath);
-
-    ~TextureManager() = default;
-
-    GLuint getTexture(const std::string &textureName) const;
-
-    void freeTextures();
-
 private:
     std::unordered_map<std::string, GLuint> _textures;
     std::string                             _directory;
+    std::vector<std::string>                _wallsTextures;
 
     bool loadTextureFromFile(const char *textureName, const char *imageFile);
 
@@ -29,4 +22,17 @@ private:
     static constexpr const char *EXIT_TEXTURE   = "exit";
 
     friend class DrawingProgram;
+
+public:
+    explicit TextureManager(const glimac::FilePath &applicationPath);
+
+    ~TextureManager() = default;
+
+    void addRandomWallTexture();
+    
+    GLuint getWallTexture(int numWall) const;
+
+    GLuint getTexture(const std::string &textureName) const;
+
+    void freeTextures();
 };
