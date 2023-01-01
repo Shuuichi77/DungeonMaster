@@ -6,8 +6,11 @@
 
 GLint textureFromFile(const char *path, string directory)
 {
-    string filename = string(path);
-    filename             = directory + '/' + filename;
+    string pathString = string(path);
+    std::replace(pathString.begin(), pathString.end(), '\\', '/');
+    std::replace(pathString.begin(), pathString.end(), ' ', '_');
+
+    string filename      = directory + '/' + pathString;
     GLuint textureID;
     glGenTextures(1, &textureID);
 
@@ -42,7 +45,9 @@ GLint textureFromFile(const char *path, string directory)
     }
     else
     {
-        std::cout << "Texture failed to load at path: " << path << std::endl;
+        std::cout << "Texture failed to load at path: " << filename << std::endl;
+        std::cout << "directory: " << directory << std::endl;
+        std::cout << "pathString: " << pathString << std::endl;
         stbi_image_free(image);
     }
 

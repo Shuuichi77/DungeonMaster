@@ -6,30 +6,32 @@
 #include <vector>
 #include "DirectionType.hpp"
 #include "FreeflyCamera.hpp"
-#include "ObjectType.hpp"
+#include "MapElement.hpp"
+#include "Monster.hpp"
+#include "InteractableObject.hpp"
 
 class CameraManager
 {
 private:
-    bool                                               &_done;
-    bool                                               _cameraCanMove = true;
-    FreeflyCamera                                      &_camera;
-    const std::vector<std::vector<ObjectType>>         &_map;
-    glimac::SDLWindowManager                           _windowManager;
-    std::chrono::time_point<std::chrono::system_clock> _timeMoved     = std::chrono::system_clock::now();
+    FreeflyCamera            &_camera;
+    glimac::SDLWindowManager &_windowManager;
+    bool                     &_gameWin;
 
-    bool isOutOfMap(int i, int j);
+    bool isOutOfMap(int i, int j, const std::vector<std::vector<MapElement>> &map);
 
-    bool canMoveTowardDirection(DirectionType nextMovementDirectionType);
+    bool canMoveTowardDirection(DirectionType nextMovementDirectionType,
+                                const std::vector<std::vector<MapElement>> &map,
+                                const std::vector<std::unique_ptr<Monster>> &monsters,
+                                const std::vector<std::unique_ptr<InteractableObject>> &_interactableObjects);
 
-    bool canMoveAgain();
-
-    glm::vec3 getNextPosition(DirectionType cameraDirection,
-                              DirectionType nextMovementDirectionType);
 
 public:
-    CameraManager(FreeflyCamera &camera, const glimac::SDLWindowManager &windowManager,
-                  const std::vector<std::vector<ObjectType>> &map, bool *done);
+    CameraManager(FreeflyCamera &camera, glimac::SDLWindowManager &windowManager,
+                  bool &gameWin);
 
-    void moveCamera();
+    void moveCamera(const SDL_MouseButtonEvent &button,
+                    const std::vector<std::vector<MapElement>> &map,
+                    const std::vector<std::unique_ptr<Monster>> &monsters,
+                    const std::vector<std::unique_ptr<InteractableObject>> &_interactableObjects,
+                    Player &player);
 };

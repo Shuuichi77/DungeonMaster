@@ -12,7 +12,7 @@ uniform bool uModelHasTexture = false;
 uniform sampler2D uModelTexture;
 uniform vec3 uModelColor;
 
-out vec3 fFragColor;
+out vec4 fFragColor;
 
 void main() {
 
@@ -37,5 +37,6 @@ void main() {
     vec3 diffuse = vec3(diff * attenuation);
     vec3 ambient = vec3(0.25);
 
-    fFragColor = (ambient + diffuse) * color;
+    fFragColor = vec4((ambient + diffuse) * color, 1.);
+    //    fFragColor = color;
 }

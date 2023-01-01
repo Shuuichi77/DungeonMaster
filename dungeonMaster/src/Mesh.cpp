@@ -94,9 +94,9 @@ void Mesh::draw(const glimac::Program &program)
             glBindTexture(GL_TEXTURE_2D, _textures[i].id);
         }
     }
-
     else
     {
+        glUniform1i(glGetUniformLocation(program.getGLId(), "uModelHasTexture"), false);
         glUniform3f(glGetUniformLocation(program.getGLId(), "uModelColor"), _color.r, _color.g, _color.b);
     }
 

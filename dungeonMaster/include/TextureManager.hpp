@@ -15,13 +15,16 @@ private:
 
     bool loadTextureFromFile(const char *textureName, const char *imageFile);
 
-    static constexpr const char *WALL_TEXTURE_1 = "wall_1";
-    static constexpr const char *WALL_TEXTURE_2 = "wall_2";
-    static constexpr const char *WALL_TEXTURE_3 = "wall_3";
-    static constexpr const char *FLOOR_TEXTURE  = "floor";
-    static constexpr const char *EXIT_TEXTURE   = "exit";
+    static constexpr const char *WALL_TEXTURE_1    = "wall_1";
+    static constexpr const char *WALL_TEXTURE_2    = "wall_2";
+    static constexpr const char *WALL_TEXTURE_3    = "wall_3";
+    static constexpr const char *FLOOR_TEXTURE     = "floor";
+    static constexpr const char *EXIT_TEXTURE      = "exit";
+    static constexpr const char *INVENTORY_TEXTURE = "inventory";
 
     friend class DrawingProgram;
+
+    friend class Interface;
 
 public:
     explicit TextureManager(const glimac::FilePath &applicationPath);
@@ -29,7 +32,7 @@ public:
     ~TextureManager() = default;
 
     void addRandomWallTexture();
-    
+
     GLuint getWallTexture(int numWall) const;
 
     GLuint getTexture(const std::string &textureName) const;

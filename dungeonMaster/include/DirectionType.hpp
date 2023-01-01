@@ -8,6 +8,7 @@ enum DirectionType : unsigned int
     EAST,
     SOUTH,
     WEST,
+    NEUTRAL // For fix model, like health bar
 };
 
 inline DirectionType &operator++(DirectionType &type)

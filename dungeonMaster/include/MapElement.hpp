@@ -2,15 +2,10 @@
 
 #include <glm/glm.hpp>
 
-enum ObjectType
+enum MapElement
 {
     ENTRY,
     EMPTY,
     WALL,
-    DOOR,
-    KEY,
-    CHEST,
-    PLAYER,
-    ENEMY,
     EXIT,
 };

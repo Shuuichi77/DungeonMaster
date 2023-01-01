@@ -1,63 +1,24 @@
 #include "../include/Game.hpp"
+#include "../include/Utils.hpp"
 
+#include <SDL/SDL_ttf.h>
 #include <glm/glm.hpp>
 #include <algorithm>
 #include <iostream>
 #include <glimac/common.hpp>
 #include <utility>
 
-template<typename T, typename... Args>
-std::unique_ptr<T> make_unique(Args &&... args)
-{
-    return std::unique_ptr<T>(new T(std::forward<Args>(args)...));
-}
 
-Game::Game(glimac::FilePath filePath, float windowWidth, float windowHeight)
+Game::Game(glimac::FilePath filePath, unsigned int windowHeight)
         :
         _camera()
-        , _filePath(std::move(filePath))
-        , _windowWidth(windowWidth)
+        , _applicationPath(std::move(filePath))
+        , _windowWidth(windowHeight * 4 / 3)
         , _windowHeight(windowHeight)
-        , _windowManager(windowWidth, windowHeight, "Dungeon Master")
-        , _cameraManager(_camera, _windowManager, _map, &_done) {}
+        , _windowManager(windowHeight * 4 / 3, windowHeight, "Dungeon Master")
+        , _cameraManager(_camera, _windowManager, _gameWin) {}
 
-
-void Game::createMap()
-{
-    DirectionType startingDir = DirectionType::NORTH;
-    _camera.setCameraDirection(startingDir);
-
-    // Faire en sorte qu'en lisant la map, si un mur est entouré d'autres murs, on ne le met pas dans le tableau
-    _map = {
-            { WALL, WALL,  ENTRY, WALL,  WALL,  WALL },
-            { WALL, WALL,  EMPTY, WALL,  EMPTY, WALL },
-            { WALL, EMPTY, EMPTY, EMPTY, EMPTY, WALL },
-            { WALL, WALL,  EMPTY, WALL,  EMPTY, WALL,  WALL },
-            { WALL, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, WALL },
-            { WALL, EMPTY, WALL,  WALL,  EMPTY, WALL },
-            { WALL, WALL,  WALL,  WALL,  EXIT,  WALL },
-    };
-
-    int nbMaxWall = _map.size() * _map.size();
-
-    for (int i = 0; i < nbMaxWall; ++i)
-    {
-        _textureManager->addRandomWallTexture();
-    }
-
-    for (int i = 0; i < _map.size(); ++i)
-    {
-        for (int j = 0; j < _map[i].size(); ++j)
-        {
-            if (_map[i][j] == ENTRY)
-            {
-                _camera.setPosition(vec3(j, 0, i));
-            }
-        }
-    }
-}
-
-int Game::run()
+int Game::initGlew()
 {
     srand(time(nullptr));
 
@@ -72,93 +33,171 @@ int Game::run()
     std::cout << "OpenGL Version : " << glGetString(GL_VERSION) << std::endl;
     std::cout << "GLEW Version : " << glewGetString(GLEW_VERSION) << std::endl;
 
-    /*********************************
-     * HERE SHOULD COME THE INITIALIZATION CODE
-     *********************************/
-    GLuint vbo;
-    glGenBuffers(1, &vbo);
-    glBindBuffer(GL_ARRAY_BUFFER, vbo);
+    glEnable(GL_DEPTH_TEST);
+    glEnable(GL_BLEND);
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
-    ShapeVertex vertices[] = {{ vec3(0.5f, 0.5f, 0.0f),   vec3(0.0f, 0.0f, 1.f), vec2(1.0f, 0.0f) },
-                              { vec3(0.5f, -0.5f, 0.0f),  vec3(0.0f, 0.0f, 1.f), vec2(1.0f, 1.0f) },
-                              { vec3(-0.5f, -0.5f, 0.0f), vec3(0.0f, 0.0f, 1.f), vec2(0.0f, 1.0f) },
+    return EXIT_SUCCESS;
+}
 
-                              { vec3(0.5f, 0.5f, 0.0f),   vec3(0.0f, 0.0f, 1.f), vec2(1.0f, 0.0f) },
-                              { vec3(-0.5f, -0.5f, 0.0f), vec3(0.0f, 0.0f, 1.f), vec2(0.0f, 1.0f) },
-                              { vec3(-0.5f, 0.5f, 0.0f),  vec3(0.0f, 0.0f, 1.f), vec2(0.0f, 0.0f) }
+void Game::initMap()
+{
+    _textureManager = Utils::make_unique<TextureManager>(_applicationPath);
+
+
+    // TODO: Read files to add ennemies
+
+    // TODO: Camera direction en fonction d'ENTRY
+    DirectionType startingDir = DirectionType::NORTH;
+    _camera.setCameraDirection(startingDir);
+
+    _map = {
+            { WALL, EMPTY, ENTRY, EMPTY, WALL,  WALL },
+            { WALL, WALL,  EMPTY, WALL,  EMPTY, WALL },
+            { WALL, WALL,  EMPTY, EMPTY, EMPTY, WALL },
+            { WALL, EMPTY, EMPTY, EMPTY, EMPTY, WALL },
+            { WALL, WALL,  EMPTY, EMPTY, EMPTY, WALL },
+            { WALL, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY },
+            { WALL, EMPTY, WALL,  WALL,  EMPTY, WALL },
+            { WALL, WALL,  WALL,  WALL,  EXIT,  WALL },
     };
 
-    glBufferData(GL_ARRAY_BUFFER, sizeof(ShapeVertex) * 6, vertices, GL_STATIC_DRAW);
-    glBindBuffer(GL_ARRAY_BUFFER, 0);
-
-    // -------- VAO --------
-    GLuint vao;
-    glGenVertexArrays(1, &vao);
-    glBindVertexArray(vao);
-
-    const GLuint VERTEX_ATTR_POSITION  = 0;
-    const GLuint VERTEX_ATTR_NORMAL    = 1;
-    const GLuint VERTEX_ATTR_TEXCOORDS = 2;
-
-    glEnableVertexAttribArray(VERTEX_ATTR_POSITION);
-    glEnableVertexAttribArray(VERTEX_ATTR_NORMAL);
-    glEnableVertexAttribArray(VERTEX_ATTR_TEXCOORDS);
-
-    glBindBuffer(GL_ARRAY_BUFFER, vbo);
-
-    glVertexAttribPointer(VERTEX_ATTR_POSITION, 3, GL_FLOAT, GL_FALSE, sizeof(ShapeVertex),
-                          (const GLvoid *) offsetof(ShapeVertex, position));
-    glVertexAttribPointer(VERTEX_ATTR_NORMAL, 3, GL_FLOAT, GL_FALSE, sizeof(ShapeVertex),
-                          (const GLvoid *) offsetof(ShapeVertex, normal));
-    glVertexAttribPointer(VERTEX_ATTR_TEXCOORDS, 2, GL_FLOAT, GL_FALSE, sizeof(ShapeVertex),
-                          (const GLvoid *) offsetof(ShapeVertex, texCoords));
-
-    glBindBuffer(GL_ARRAY_BUFFER, 0);
-    glBindVertexArray(0);
-
-    _textureManager = make_unique<TextureManager>(_filePath);
-    _modelManager   = make_unique<ModelManager>(_filePath);
-    _drawingProgram = make_unique<DrawingProgram>(_filePath, "tex3D.vs.glsl", "tex3D.fs.glsl", _camera, _windowWidth,
-                                                  _windowHeight, *_textureManager, *_modelManager);
-    _drawingProgram->use();
-
-
-    createMap();
-
-    while (!_done)
+    int      nbMaxWall = _map.size() * _map.size();
+    for (int i         = 0; i < nbMaxWall; ++i)
     {
-        _cameraManager.moveCamera();
+        _textureManager->addRandomWallTexture();
+    }
+    for (int i         = 0; i < _map.size(); ++i)
+    {
+        for (int j = 0; j < _map[i].size(); ++j)
+        {
+            if (_map[i][j] == ENTRY)
+            {
+                _camera.setPosition(vec3(j, 0.25f, i));
+                break;
+            }
+        }
+    }
 
-        // Event loop:
+    _characterManager = Utils::make_unique<CharacterManager>(_camera.getPosition(), _camera.getCameraDirection(),
+                                                             _windowWidth,
+                                                             _windowHeight);
+
+    _characterManager->addMonster(Utils::make_unique<Monster>(MonsterType::ARMOGOHMA,
+                                                              vec3(3, 0, -2),
+                                                              DirectionType::WEST));
+
+    _characterManager->addMonster(Utils::make_unique<Monster>(MonsterType::DARKRAI,
+                                                              vec3(4, 0, -5),
+                                                              DirectionType::SOUTH));
+
+    _characterManager->addMonster(Utils::make_unique<Monster>(MonsterType::KING_BOO,
+                                                              vec3(2, 0, -5),
+                                                              DirectionType::SOUTH));
+
+    _characterManager->addInteractableObject(
+            Utils::make_unique<InteractableObject>(InteractableObjectType::INTERACTABLE_CHEST_KEY,
+                                                   vec3(1, 0, -3),
+                                                   DirectionType::EAST));
+
+//    _characterManager->addInteractableObject(
+//            Utils::make_unique<InteractableObject>(InteractableObjectType::INTERACTABLE_CHEST_WEAPON_02,
+//                                                   vec3(2, 0, -3),
+//                                                   DirectionType::NORTH));
+
+    _characterManager->addInteractableObject(
+            Utils::make_unique<InteractableObject>(InteractableObjectType::INTERACTABLE_CHEST_FAIRY,
+                                                   vec3(3, 0, -3),
+                                                   DirectionType::SOUTH));
+
+    _characterManager->addInteractableObject(
+            Utils::make_unique<InteractableObject>(InteractableObjectType::INTERACTABLE_CHEST_WEAPON_03,
+                                                   vec3(3, 0, -4),
+                                                   DirectionType::WEST));
+
+    _characterManager->addInteractableObject(
+            Utils::make_unique<InteractableObject>(InteractableObjectType::INTERACTABLE_DOOR,
+                                                   vec3(4, 0, -6),
+                                                   DirectionType::SOUTH));
+}
+
+void Game::initPtr()
+{
+    _drawingProgram = Utils::make_unique<DrawingProgram>(_applicationPath, "tex3D.vs.glsl", "tex3D.fs.glsl", _camera,
+                                                         _windowWidth, _windowHeight, *_textureManager, _windowManager,
+                                                         _characterManager->getPlayer(),
+                                                         _characterManager->getMonsters(),
+                                                         _characterManager->getInteractableObjects());
+    _drawingProgram->init();
+    std::cout << "Ptr initialized" << std::endl;
+}
+
+void Game::updatePlayer()
+{
+    // TODO: _characterManager.updatePlayer();
+    _drawingProgram->updatePlayer(_characterManager->getPlayer());
+}
+
+void Game::loop()
+{
+    while (!_gameWin && !_gamelLost)
+    {
         SDL_Event e;
         while (_windowManager.pollEvent(e))
         {
-            if (e.type == SDL_QUIT)
+            switch (e.type)
             {
-                _done = true; // Leave the loop after this iteration
+                case SDL_QUIT:_gameWin = true;
+                    break;
+
+                case SDL_MOUSEBUTTONDOWN:
+                    if (e.button.button == SDL_BUTTON_LEFT)
+                    {
+                        if (_characterManager->leftClick(_camera.getPosition(), _camera.getCameraDirection(),
+                                                         _windowManager.getMousePosition()))
+                        {
+                            updatePlayer();
+                        }
+                    }
+                    break;
+
+                case SDL_KEYDOWN:
+                    _cameraManager.moveCamera(e.button, _map, _characterManager->getMonsters(),
+                                              _characterManager->getInteractableObjects(),
+                                              _characterManager->getPlayer());
             }
         }
 
-        /*********************************
-         * HERE SHOULD COME THE RENDERING CODE
-         *********************************/
+        if (_characterManager->updateMonsters(_map))
+        {
+            std::cout << "LOST" << std::endl;
+            _gamelLost = true;
+            continue;
+        }
+
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-        glBindVertexArray(vao);
-
-        // First Wall
-        _drawingProgram->drawMap(_map, _map[0].size(), _map.size());
-
-        glBindVertexArray(0);
+        _drawingProgram->drawMap(_map, (int) _map[0].size(), (int) _map.size());
         _windowManager.swapBuffers();
     }
+}
+
+int Game::run()
+{
+    if (initGlew() == EXIT_FAILURE)
+    {
+        return EXIT_FAILURE;
+    }
+
+    initMap();
+    initPtr();
+    loop();
+
+    // TODO: menu.displayEndingScreen(_gamelLost, _gameWin);
 
     _textureManager->freeTextures();
 
     return EXIT_SUCCESS;
 }
 
-void Game::exitGame()
-{
-    _done = true;
-}
+

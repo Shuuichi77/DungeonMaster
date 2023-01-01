@@ -34,3 +34,11 @@ public:
 
     size_t getMeshesSize() const { return _meshes.size(); }
 };
+
+/*
+/home/johnson/CLionProjects/DungeonMaster/dungeonMaster/assets/models/dungeon-stairs/source/textures/Stair Rails A.png
+/home/johnson/CLionProjects/DungeonMaster/dungeonMaster/assets/models/dungeon-stairs/source/textures/Stair Rails A.png
+
+
+/home/johnson/CLionProjects/DungeonMaster/dungeonMaster/assets/models/dungeon-stairs/source/Stair_Rails_A.png
+ */

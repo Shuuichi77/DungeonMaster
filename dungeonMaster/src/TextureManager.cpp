@@ -6,15 +6,19 @@
 TextureManager::TextureManager(const glimac::FilePath &applicationPath)
         : _directory(applicationPath.dirPath() + "assets/textures" + "/")
 {
-    glEnable(GL_DEPTH_TEST);
-//    glDepthFunc(GL_LESS);
-
     loadTextureFromFile(WALL_TEXTURE_1, "wall_01.png");
     loadTextureFromFile(WALL_TEXTURE_2, "wall_02.png");
     loadTextureFromFile(WALL_TEXTURE_3, "wall_03.png");
 
+//    loadTextureFromFile(WALL_TEXTURE_1, "wall_04.png");
+//    loadTextureFromFile(WALL_TEXTURE_2, "wall_04.png");
+//    loadTextureFromFile(WALL_TEXTURE_3, "wall_04.jpg");
+
     loadTextureFromFile(FLOOR_TEXTURE, "floor_01.png");
-    loadTextureFromFile(EXIT_TEXTURE, "stairs.png");
+//    loadTextureFromFile(FLOOR_TEXTURE, "floor_02.jpg");
+
+    loadTextureFromFile(INVENTORY_TEXTURE, "inventory_05.png");
+    loadTextureFromFile(EXIT_TEXTURE, "black.jpg");
 }
 
 GLuint TextureManager::getTexture(const std::string &textureName) const
@@ -44,8 +48,8 @@ bool TextureManager::loadTextureFromFile(const char *textureName, const char *im
     glBindTexture(GL_TEXTURE_2D, texture);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, image->getWidth(), image->getHeight(), 0, GL_RGBA,
-                 GL_FLOAT, image->getPixels());
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, image->getWidth(), image->getHeight(),
+                 0, GL_RGBA, GL_FLOAT, image->getPixels());
     glBindTexture(GL_TEXTURE_2D, 0);
 
     _textures.emplace(textureName, texture);

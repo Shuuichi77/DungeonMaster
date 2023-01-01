@@ -1,176 +1,107 @@
 #include <iostream>
 #include "../include/CameraManager.hpp"
-
 #include "../include/Utils.hpp"
 
-CameraManager::CameraManager(FreeflyCamera &camera, const glimac::SDLWindowManager &windowManager,
-                             const std::vector<std::vector<ObjectType>> &map, bool *done)
+CameraManager::CameraManager(FreeflyCamera &camera, glimac::SDLWindowManager &windowManager, bool &gameWin)
         : _camera(camera)
         , _windowManager(windowManager)
-        , _map(map)
-        , _done(*done) {}
+        , _gameWin(gameWin) {}
 
-void CameraManager::moveCamera()
+void CameraManager::moveCamera(const SDL_MouseButtonEvent &button,
+                               const std::vector<std::vector<MapElement>> &map,
+                               const std::vector<std::unique_ptr<Monster>> &monsters,
+                               const std::vector<std::unique_ptr<InteractableObject>> &_interactableObjects,
+                               Player &player)
 {
-    if (!_cameraCanMove && canMoveAgain())
+    if (_windowManager.isKeyPressed(SDLK_a))
     {
-        _cameraCanMove = true;
+        _camera.rotateLeft(90.f);
     }
-
-    if (_cameraCanMove)
+    if (_windowManager.isKeyPressed(SDLK_e))
     {
-        if (_windowManager.isKeyPressed(SDLK_a))
+        _camera.rotateLeft(-90.f);
+    }
+    if (_windowManager.isKeyPressed(SDLK_z))
+    {
+        if (canMoveTowardDirection(DirectionType::NORTH, map, monsters, _interactableObjects))
         {
-            _camera.rotateLeft(90.f);
-            _timeMoved     = std::chrono::system_clock::now();
-            _cameraCanMove = false;
+            _camera.moveFront(1.f);
+            player.setPosition(_camera.getPosition());
         }
-        if (_windowManager.isKeyPressed(SDLK_e))
+    }
+    if (_windowManager.isKeyPressed(SDLK_s))
+    {
+        if (canMoveTowardDirection(DirectionType::SOUTH, map, monsters, _interactableObjects))
         {
-            _camera.rotateLeft(-90.f);
-            _timeMoved     = std::chrono::system_clock::now();
-            _cameraCanMove = false;
+            _camera.moveFront(-1.f);
+            player.setPosition(_camera.getPosition());
         }
-        if (_windowManager.isKeyPressed(SDLK_z))
+    }
+    if (_windowManager.isKeyPressed(SDLK_q))
+    {
+        if (canMoveTowardDirection(DirectionType::WEST, map, monsters, _interactableObjects))
         {
-            if (canMoveTowardDirection(DirectionType::NORTH))
-            {
-                _camera.moveFront(1.f);
-            }
-            _timeMoved     = std::chrono::system_clock::now();
-            _cameraCanMove = false;
+            _camera.moveLeft(1.f);
+            player.setPosition(_camera.getPosition());
         }
-        if (_windowManager.isKeyPressed(SDLK_s))
+    }
+    if (_windowManager.isKeyPressed(SDLK_d))
+    {
+        if (canMoveTowardDirection(DirectionType::EAST, map, monsters, _interactableObjects))
         {
-            if (canMoveTowardDirection(DirectionType::SOUTH))
-            {
-                _camera.moveFront(-1.f);
-            }
-            _timeMoved     = std::chrono::system_clock::now();
-            _cameraCanMove = false;
-        }
-        if (_windowManager.isKeyPressed(SDLK_q))
-        {
-            if (canMoveTowardDirection(DirectionType::WEST))
-            {
-                _camera.moveLeft(1.f);
-
-            }
-            _timeMoved     = std::chrono::system_clock::now();
-            _cameraCanMove = false;
-        }
-        if (_windowManager.isKeyPressed(SDLK_d))
-        {
-            if (canMoveTowardDirection(DirectionType::EAST))
-            {
-                _camera.moveLeft(-1.f);
-            }
-            _timeMoved     = std::chrono::system_clock::now();
-            _cameraCanMove = false;
+            _camera.moveLeft(-1.f);
+            player.setPosition(_camera.getPosition());
         }
     }
 }
 
-bool CameraManager::isOutOfMap(int i, int j)
+bool CameraManager::isOutOfMap(int i, int j, const std::vector<std::vector<MapElement>> &map)
 {
-    return i < 0 || i >= _map.size() || j < 0 || j >= _map[i].size();
+    return i < 0 || i >= map.size() || j < 0 || j >= map[i].size();
 }
 
-bool CameraManager::canMoveTowardDirection(DirectionType nextMovementDirectionType)
+bool CameraManager::canMoveTowardDirection(DirectionType nextMovementDirectionType,
+                                           const std::vector<std::vector<MapElement>> &map,
+                                           const std::vector<std::unique_ptr<Monster>> &monsters,
+                                           const std::vector<std::unique_ptr<InteractableObject>> &_interactableObjects)
 {
-    const glm::vec3 nextCameraPos = _camera.getPosition() = getNextPosition(_camera.getCameraDirection(),
-                                                                            nextMovementDirectionType);
+    glm::vec3 nextPosition = Utils::getNextPosition(_camera.getPosition(), _camera.getCameraDirection(),
+                                                    nextMovementDirectionType);
 
-    int i = floatToint(-nextCameraPos.z);
-    int j = floatToint(nextCameraPos.x);
+    for (const auto &monster: monsters)
+    {
+        if (Utils::cmpNextPosAndPos(monster->getPosition(), nextPosition))
+        {
+            return false;
+        }
+    }
+    for (const auto &interactableObject: _interactableObjects)
+    {
+        if (Utils::cmpNextPosAndPos(interactableObject->getPosition(), nextPosition))
+        {
+            return false;
+        }
+    }
 
-    if (isOutOfMap(i, j))
+    int i = Utils::floatToint(-nextPosition.z);
+    int j = Utils::floatToint(nextPosition.x);
+    if (isOutOfMap(i, j, map))
     {
         return false;
     }
 
-    if (_map[i][j] == ObjectType::WALL)
+    if (map[i][j] == MapElement::WALL)
     {
+        std::cout << "Wall" << std::endl;
         return false;
     }
 
-    if (_map[i][j] == ObjectType::EXIT)
+    if (map[i][j] == MapElement::EXIT)
     {
-        _done = true;
+        std::cout << "Exit" << std::endl;
+        _gameWin = true;
         return true;
     }
 
     return true;
 }
-
-bool CameraManager::canMoveAgain()
-{
-    std::chrono::time_point<std::chrono::system_clock> now             = std::chrono::system_clock::now();
-    std::chrono::duration<double>                      elapsed_seconds = now - _timeMoved;
-    if (elapsed_seconds.count() > 0.15)
-    {
-        return true;
-    }
-    return false;
-}
-
-glm::vec3 CameraManager::getNextPosition(DirectionType cameraDirection, DirectionType nextMovementDirectionType)
-{
-    switch (nextMovementDirectionType)
-    {
-        case NORTH:
-            switch (cameraDirection)
-            {
-                case NORTH:
-                    return glm::vec3 { _camera.getPosition().x, _camera.getPosition().y, _camera.getPosition().z - 1 };
-                case EAST:
-                    return glm::vec3 { _camera.getPosition().x + 1, _camera.getPosition().y, _camera.getPosition().z };
-                case SOUTH:
-                    return glm::vec3 { _camera.getPosition().x, _camera.getPosition().y, _camera.getPosition().z + 1 };
-                case WEST:
-                    return glm::vec3 { _camera.getPosition().x - 1, _camera.getPosition().y, _camera.getPosition().z };
-            }
-
-        case EAST:
-            switch (cameraDirection)
-            {
-                case NORTH:
-                    return glm::vec3 { _camera.getPosition().x + 1, _camera.getPosition().y, _camera.getPosition().z };
-                case EAST:
-                    return glm::vec3 { _camera.getPosition().x, _camera.getPosition().y, _camera.getPosition().z + 1 };
-                case SOUTH:
-                    return glm::vec3 { _camera.getPosition().x - 1, _camera.getPosition().y, _camera.getPosition().z };
-                case WEST:
-                    return glm::vec3 { _camera.getPosition().x, _camera.getPosition().y, _camera.getPosition().z - 1 };
-            }
-
-        case SOUTH:
-            switch (cameraDirection)
-            {
-                case NORTH:
-                    return glm::vec3 { _camera.getPosition().x, _camera.getPosition().y, _camera.getPosition().z + 1 };
-                case EAST:
-                    return glm::vec3 { _camera.getPosition().x - 1, _camera.getPosition().y, _camera.getPosition().z };
-                case SOUTH:
-                    return glm::vec3 { _camera.getPosition().x, _camera.getPosition().y, _camera.getPosition().z - 1 };
-                case WEST:
-                    return glm::vec3 { _camera.getPosition().x + 1, _camera.getPosition().y, _camera.getPosition().z };
-            }
-
-        case WEST:
-            switch (cameraDirection)
-            {
-                case NORTH:
-                    return glm::vec3 { _camera.getPosition().x - 1, _camera.getPosition().y, _camera.getPosition().z };
-                case EAST:
-                    return glm::vec3 { _camera.getPosition().x, _camera.getPosition().y, _camera.getPosition().z - 1 };
-                case SOUTH:
-                    return glm::vec3 { _camera.getPosition().x + 1, _camera.getPosition().y, _camera.getPosition().z };
-                case WEST:
-                    return glm::vec3 { _camera.getPosition().x, _camera.getPosition().y, _camera.getPosition().z + 1 };
-            }
-
-        default:return _camera.getPosition();
-    }
-}
-
