@@ -28,7 +28,7 @@ ModelManager::ModelManager(const glimac::FilePath &applicationPath, const Freefl
     loadModelFromFile("dungeonMaster/assets/models/Chest/Chest.obj", CHEST_MODEL);
     loadModelFromFile("dungeonMaster/assets/models/Money/Money.dae", MONEY_MODEL);
     loadModelFromFile("dungeonMaster/assets/models/Door/Door.obj", DOOR_MODEL);
-    loadModelFromFile("dungeonMaster/assets/models/Milk/TyRonRonMilk.obj", MILK_MODEL);
+    loadModelFromFile("dungeonMaster/assets/models/Milk/Milk.obj", MILK_MODEL);
     loadModelFromFile("dungeonMaster/assets/models/HealthPotion/HealthPotion.obj", HEALTH_POTION_MODEL);
     loadModelFromFile("dungeonMaster/assets/models/Fairy/Fairy.fbx", FAIRY_MODEL);
     loadModelFromFile("dungeonMaster/assets/models/Key/Key.dae", KEY_MODEL);

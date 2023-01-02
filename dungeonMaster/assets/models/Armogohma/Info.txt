@@ -1,0 +1,10 @@
+Armogohma extracted from Twilight Princess with in-game rigging.
+
+Tools:
+Dolphin to extract the .arc files
+yaz0dec.exe and/or rarcdump.exe
+BmdView2 for all textures
+Blender 2.78 with bdl/bmd import plug in
+
+AJD-262
+March 17 2021
