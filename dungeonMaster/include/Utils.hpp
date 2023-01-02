@@ -12,6 +12,11 @@ public:
         return static_cast<int>(std::round(a));
     }
 
+    static int floatToAbsInt(float a)
+    {
+        return abs(static_cast<int>(std::round(a)));
+    }
+
     static bool cmpff(float A, float B, float epsilon = 0.005f)
     {
         return (fabs(A - B) < epsilon);
@@ -28,7 +33,8 @@ public:
         return std::unique_ptr<T>(new T(std::forward<Args>(args)...));
     }
 
-    static glm::vec3 getNextPosition(glm::vec3 pos, DirectionType currentDirection, DirectionType nextDirectionType)
+    static glm::vec3
+    getNextPosition(const glm::vec3 &pos, const DirectionType &currentDirection, const DirectionType &nextDirectionType)
     {
         switch (nextDirectionType)
         {
@@ -39,6 +45,7 @@ public:
                     case EAST:return glm::vec3 { pos.x + 1, pos.y, pos.z };
                     case SOUTH:return glm::vec3 { pos.x, pos.y, pos.z + 1 };
                     case WEST:return glm::vec3 { pos.x - 1, pos.y, pos.z };
+                    case NEUTRAL:break;
                 }
 
             case EAST:
@@ -48,6 +55,7 @@ public:
                     case EAST:return glm::vec3 { pos.x, pos.y, pos.z + 1 };
                     case SOUTH:return glm::vec3 { pos.x - 1, pos.y, pos.z };
                     case WEST:return glm::vec3 { pos.x, pos.y, pos.z - 1 };
+                    case NEUTRAL:break;
                 }
 
             case SOUTH:
@@ -57,6 +65,7 @@ public:
                     case EAST:return glm::vec3 { pos.x - 1, pos.y, pos.z };
                     case SOUTH:return glm::vec3 { pos.x, pos.y, pos.z - 1 };
                     case WEST:return glm::vec3 { pos.x + 1, pos.y, pos.z };
+                    case NEUTRAL:break;
                 }
 
             case WEST:
@@ -66,8 +75,8 @@ public:
                     case EAST:return glm::vec3 { pos.x, pos.y, pos.z - 1 };
                     case SOUTH:return glm::vec3 { pos.x + 1, pos.y, pos.z };
                     case WEST:return glm::vec3 { pos.x, pos.y, pos.z + 1 };
+                    case NEUTRAL:break;
                 }
-
 
             default:return pos;
         }

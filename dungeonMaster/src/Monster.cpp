@@ -88,11 +88,34 @@ bool Monster::canAttackPlayer(const glm::vec3 &playerPosition)
     return false;
 }
 
+bool Monster::isNextPositionWater(const glm::vec3 &nextPosition,
+                                  const std::vector<std::vector<MapElement>> &map)
+{
+    return map[Utils::floatToAbsInt(nextPosition.z)][Utils::floatToAbsInt(nextPosition.x)] == WATER;
+}
+
+void Monster::moveIfGoodDirectionAndNotWater(const DirectionType &nextDirection,
+                                             const std::vector<std::vector<MapElement>> &map)
+{
+    if (getDirectionType() != nextDirection)
+    {
+        setDirectionType(nextDirection);
+    }
+
+    else
+    {
+        glm::vec3 nextPosition = Utils::getNextPosition(getPosition(), getDirectionType(), DirectionType::NORTH);
+        if (!isNextPositionWater(nextPosition, map))
+        {
+            setPosition(nextPosition);
+        }
+    }
+}
+
 bool Monster::update(Player &player, const std::vector<std::vector<MapElement>> &map,
                      std::vector<std::unique_ptr<Monster>> &monsters,
                      std::vector<std::unique_ptr<InteractableObject>> &interactableObjects)
 {
-    std::cout << "update " << _type << std::endl;
     glm::vec3 playerPosition  = player.getPosition();
     glm::vec3 monsterPosition = getPosition();
 
@@ -105,69 +128,35 @@ bool Monster::update(Player &player, const std::vector<std::vector<MapElement>> 
     }
 
 
-//    else if (Utils::cmpff(playerPosition.x, monsterPosition.x))
-//    {
-//        std::cout << "SAME X for " << _type << std::endl;
-//        if (isPathWalkableVertically((int) playerPosition.x, (int) playerPosition.z, (int) monsterPosition.z, map,
-//                                     monsters,
-//                                     interactableObjects))
-//        {
-//            std::cout << "isPathWalkableVertically for " << _type << std::endl;
-//            if (playerPosition.z < monsterPosition.z)
-//            {
-////                if (getDirectionType() == DirectionType::NORTH)
-////                {
-////                    move(DirectionType::NORTH);
-////                }
-////                else
-////                {
-////                    setDirectionType(DirectionType::NORTH);
-////                }
-//            }
-//            else
-//            {
-////                if (getDirectionType() == DirectionType::SOUTH)
-////                {
-////                    move(DirectionType::SOUTH);
-////                }
-////                else
-////                {
-////                    setDirectionType(DirectionType::SOUTH);
-////                }
-//            }
-//        }
-//    }
-////
-////    else if (Utils::cmpff(playerPosition.z, monsterPosition.z))
-////    {
-////        std::cout << "SAME Z for " << _type << std::endl;
-////        if (isPathWalkableHorizontally(playerPosition.z, playerPosition.x, monsterPosition.x, map, monsters,
-////                                       interactableObjects))
-////        {
-////            if (playerPosition.x < monsterPosition.x)
-////            {
-////                if (getDirectionType() == DirectionType::WEST)
-////                {
-////                    move(DirectionType::WEST);
-////                }
-////                else
-////                {
-////                    setDirectionType(DirectionType::WEST);
-////                }
-////            }
-////            else
-////            {
-////                if (getDirectionType() == DirectionType::EAST)
-////                {
-////                    move(DirectionType::EAST);
-////                }
-////                else
-////                {
-////                    setDirectionType(DirectionType::EAST);
-////                }
-////            }
-////        }
-////    }
+    else if (Utils::cmpff(playerPosition.x, monsterPosition.x))
+    {
+        if (isPathWalkableVertically(playerPosition, monsterPosition, map, monsters, interactableObjects))
+        {
+            if (playerPosition.z < monsterPosition.z)
+            {
+                moveIfGoodDirectionAndNotWater(DirectionType::NORTH, map);
+            }
+            else
+            {
+                moveIfGoodDirectionAndNotWater(DirectionType::SOUTH, map);
+            }
+        }
+    }
+
+    else if (Utils::cmpff(playerPosition.z, monsterPosition.z))
+    {
+        if (isPathWalkableHorizontally(playerPosition, monsterPosition, map, monsters, interactableObjects))
+        {
+            if (playerPosition.x < monsterPosition.x)
+            {
+                moveIfGoodDirectionAndNotWater(DirectionType::WEST, map);
+            }
+            else
+            {
+                moveIfGoodDirectionAndNotWater(DirectionType::EAST, map);
+            }
+        }
+    }
 
     return false;
 }
@@ -179,50 +168,59 @@ std::vector<glm::vec3> Monster::getInteractablesPos(std::vector<std::unique_ptr<
 
     for (auto &monster: monsters)
     {
-        if (monster->getPosition() == getPosition())
+        if (monster != nullptr)
         {
-            continue;
-        }
+            if (monster->getPosition() == getPosition())
+            {
+                continue;
+            }
 
-        interactablesPos.push_back(monster->getPosition());
+            interactablesPos.push_back(monster->getPosition());
+        }
     }
 
     for (auto &interactableObject: interactableObjects)
     {
-        interactablesPos.push_back(interactableObject->getPosition());
+        if (interactableObject != nullptr)
+        {
+            interactablesPos.push_back(interactableObject->getPosition());
+        }
     }
 
     return interactablesPos;
 }
 
-bool
-Monster::isPathWalkableVertically(int x, int starting, int ending, const std::vector<std::vector<MapElement>> &map,
-                                  std::vector<std::unique_ptr<Monster>> &monsters,
-                                  std::vector<std::unique_ptr<InteractableObject>> &interactableObjects)
+bool Monster::isPathWalkableVertically(const glm::vec3 &playerPosition, const glm::vec3 &monsterPosition,
+                                       const std::vector<std::vector<MapElement>> &map,
+                                       std::vector<std::unique_ptr<Monster>> &monsters,
+                                       std::vector<std::unique_ptr<InteractableObject>> &interactableObjects)
 {
     std::vector<glm::vec3> interactablesPos = getInteractablesPos(monsters, interactableObjects);
+    int                    x                = Utils::floatToAbsInt(monsterPosition.x);
+    int                    start;
+    int                    end;
 
-    starting = abs(starting);
-    ending   = abs(ending);
-
-    if (starting > ending)
+    if (abs(playerPosition.z) < abs(monsterPosition.z))
     {
-        int tmp = starting;
-        starting = ending;
-        ending   = tmp;
+        start = Utils::floatToAbsInt(playerPosition.z);
+        end   = Utils::floatToAbsInt(monsterPosition.z);
+    }
+    else
+    {
+        start = Utils::floatToAbsInt(monsterPosition.z);
+        end   = Utils::floatToAbsInt(playerPosition.z);
     }
 
-    for (int i = abs(starting); i < abs(ending); ++i)
+    for (int i = start; i < end; ++i)
     {
-        if (map[i][abs(x)] == MapElement::WALL)
+        if (map[i][x] == MapElement::WALL)
         {
             return false;
         }
 
-        for (auto &interactablePos: interactablesPos)
+        for (const auto &interactablePos: interactablesPos)
         {
-            std::cout << (int) abs(interactablePos.z) << " vs " << i << std::endl;
-            if ((int) abs(interactablePos.z) == i)
+            if (x == Utils::floatToAbsInt(interactablePos.x) && i == Utils::floatToAbsInt(interactablePos.z))
             {
                 return false;
             }
@@ -232,23 +230,37 @@ Monster::isPathWalkableVertically(int x, int starting, int ending, const std::ve
     return true;
 }
 
-bool Monster::isPathWalkableHorizontally(int z, float starting, float ending,
+bool Monster::isPathWalkableHorizontally(const glm::vec3 &playerPosition, const glm::vec3 &monsterPosition,
                                          const std::vector<std::vector<MapElement>> &map,
                                          std::vector<std::unique_ptr<Monster>> &monsters,
                                          std::vector<std::unique_ptr<InteractableObject>> &interactableObjects)
 {
-    std::vector<glm::vec3> interactablePos = getInteractablesPos(monsters, interactableObjects);
+    std::vector<glm::vec3> interactablesPos = getInteractablesPos(monsters, interactableObjects);
+    int                    z                = Utils::floatToAbsInt(monsterPosition.z);
+    int                    start;
+    int                    end;
 
-    for (int i = (int) starting; i < (int) ending; ++(i))
+    if (abs(playerPosition.x) < abs(monsterPosition.x))
     {
-//        if (map[z][i] == MapElement::WALL)
-//        {
-//            return false;
-//        }
+        start = Utils::floatToAbsInt(playerPosition.x);
+        end   = Utils::floatToAbsInt(monsterPosition.x);
+    }
+    else
+    {
+        start = Utils::floatToAbsInt(monsterPosition.x);
+        end   = Utils::floatToAbsInt(playerPosition.x);
+    }
 
-        for (auto &pos: interactablePos)
+    for (int i = start; i < end; ++i)
+    {
+        if (map[z][i] == MapElement::WALL || map[z][i] == MapElement::WATER)
         {
-            if ((int) pos.x == i)
+            return false;
+        }
+
+        for (const auto &interactablePos: interactablesPos)
+        {
+            if (i == Utils::floatToAbsInt(interactablePos.x) && z == Utils::floatToAbsInt(interactablePos.z))
             {
                 return false;
             }

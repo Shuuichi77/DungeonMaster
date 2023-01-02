@@ -6,6 +6,7 @@ enum MapElement
 {
     ENTRY,
     EMPTY,
+    WATER,
     WALL,
     EXIT,
 };

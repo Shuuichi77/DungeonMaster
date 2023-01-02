@@ -62,13 +62,11 @@ private:
 
     void drawWall(float x, float y, float z, DirectionType wallOrientation, int nbWall);
 
-    void drawFloorAndCeiling(float x, float y, float z);
+    void drawFloorAndCeiling(float x, float y, float z, const std::string &floorTextureName);
 
     void drawWallAroundMapBorder(float x, float y, float z, int width, int height, int numWall);
 
-    void drawEntry(float x, float y, float z, int width, int height, int numWall);
-
-    void drawExit(float x, float y, float z, int width, int height, int numWall);
+    void drawLadder(float x, float y, float z);
 
     // ------------------------------ Debug ------------------------------
     float _x = 4.f;

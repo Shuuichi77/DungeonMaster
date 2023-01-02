@@ -24,7 +24,6 @@ bool ChronoBetweenActions::isTimeElapsed()
 
     if (elapsed > _timeBetweenActions)
     {
-        std::cout << "reset" << std::endl;
         reset();
         return true;
     }

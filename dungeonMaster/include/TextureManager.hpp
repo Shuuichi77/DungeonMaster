@@ -21,6 +21,7 @@ private:
     static constexpr const char *FLOOR_TEXTURE     = "floor";
     static constexpr const char *EXIT_TEXTURE      = "exit";
     static constexpr const char *INVENTORY_TEXTURE = "inventory";
+    static constexpr const char *WATER_TEXTURE     = "WATER";
 
     friend class DrawingProgram;
 

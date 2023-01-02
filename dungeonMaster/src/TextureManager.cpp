@@ -9,14 +9,8 @@ TextureManager::TextureManager(const glimac::FilePath &applicationPath)
     loadTextureFromFile(WALL_TEXTURE_1, "wall_01.png");
     loadTextureFromFile(WALL_TEXTURE_2, "wall_02.png");
     loadTextureFromFile(WALL_TEXTURE_3, "wall_03.png");
-
-//    loadTextureFromFile(WALL_TEXTURE_1, "wall_04.png");
-//    loadTextureFromFile(WALL_TEXTURE_2, "wall_04.png");
-//    loadTextureFromFile(WALL_TEXTURE_3, "wall_04.jpg");
-
     loadTextureFromFile(FLOOR_TEXTURE, "floor_01.png");
-//    loadTextureFromFile(FLOOR_TEXTURE, "floor_02.jpg");
-
+    loadTextureFromFile(WATER_TEXTURE, "water.png");
     loadTextureFromFile(INVENTORY_TEXTURE, "inventory_05.png");
     loadTextureFromFile(EXIT_TEXTURE, "black.jpg");
 }

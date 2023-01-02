@@ -70,14 +70,14 @@ bool CameraManager::canMoveTowardDirection(DirectionType nextMovementDirectionTy
 
     for (const auto &monster: monsters)
     {
-        if (Utils::cmpNextPosAndPos(monster->getPosition(), nextPosition))
+        if (monster != nullptr && Utils::cmpNextPosAndPos(monster->getPosition(), nextPosition))
         {
             return false;
         }
     }
     for (const auto &interactableObject: _interactableObjects)
     {
-        if (Utils::cmpNextPosAndPos(interactableObject->getPosition(), nextPosition))
+        if (interactableObject != nullptr && Utils::cmpNextPosAndPos(interactableObject->getPosition(), nextPosition))
         {
             return false;
         }
@@ -90,7 +90,7 @@ bool CameraManager::canMoveTowardDirection(DirectionType nextMovementDirectionTy
         return false;
     }
 
-    if (map[i][j] == MapElement::WALL)
+    if (map[i][j] == MapElement::WALL || map[i][j] == MapElement::WATER)
     {
         std::cout << "Wall" << std::endl;
         return false;

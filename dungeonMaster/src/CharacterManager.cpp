@@ -24,7 +24,7 @@ bool CharacterManager::leftClick(const glm::vec3 &playerPosition, const Directio
                                    [&coordsClicked, this](
                                            const std::unique_ptr<Monster> &monster)
                                    {
-                                       if (monster->isClicked(coordsClicked))
+                                       if (monster != nullptr && monster->isClicked(coordsClicked))
                                        {
                                            if (monster->loseHealth(_player.getAttack()))
                                            {
@@ -33,6 +33,7 @@ bool CharacterManager::leftClick(const glm::vec3 &playerPosition, const Directio
                                                return true;
                                            }
                                        }
+
                                        return false;
                                    }), _monsters.end());
 
@@ -40,11 +41,13 @@ bool CharacterManager::leftClick(const glm::vec3 &playerPosition, const Directio
                                               [&coordsClicked, this](
                                                       const std::unique_ptr<InteractableObject> &interactableObject)
                                               {
-                                                  if (interactableObject->isClicked(coordsClicked) &&
+                                                  if (interactableObject != nullptr &&
+                                                      interactableObject->isClicked(coordsClicked) &&
                                                       interactableObject->interactWithPlayer(_player))
                                                   {
                                                       return true;
                                                   }
+
                                                   return false;
                                               }), _interactableObjects.end());
 
@@ -104,7 +107,7 @@ bool CharacterManager::updateMonsters(const std::vector<std::vector<MapElement>>
     {
         for (auto &monster: _monsters)
         {
-            if (monster->update(_player, map, _monsters, _interactableObjects))
+            if (monster != nullptr && monster->update(_player, map, _monsters, _interactableObjects))
             {
                 return true;
             }

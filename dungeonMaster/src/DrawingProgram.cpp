@@ -522,18 +522,19 @@ void DrawingProgram::drawQuads(const std::vector<std::vector<MapElement>> &map, 
                 drawWalls(i, j, width, height, map, numWall);
             }
 
+            else if (map[i][j] == MapElement::WATER)
+            {
+                drawFloorAndCeiling((float) j, 0, (float) i, TextureManager::WATER_TEXTURE);
+            }
+
             else
             {
                 drawWallAroundMapBorder((float) j, 0, (float) i, width, height, numWall);
-                drawFloorAndCeiling((float) j, 0, (float) i);
+                drawFloorAndCeiling((float) j, 0, (float) i, TextureManager::FLOOR_TEXTURE);
 
-                switch (map[i][j])
+                if (map[i][j] == MapElement::ENTRY || map[i][j] == MapElement::EXIT)
                 {
-                    case MapElement::ENTRY:drawEntry((float) j, 0, (float) i, width, height, numWall);
-                        break;
-
-                    case MapElement::EXIT:drawExit((float) j, 0, (float) i, width, height, numWall);
-                        break;
+                    drawLadder((float) j, 0, (float) i);
                 }
             }
         }
@@ -564,7 +565,7 @@ void DrawingProgram::drawWallAroundMapBorder(float x, float y, float z, int widt
     }
 }
 
-void DrawingProgram::drawEntry(float x, float y, float z, int width, int height, int numWall)
+void DrawingProgram::drawLadder(float x, float y, float z)
 {
     glBindTexture(GL_TEXTURE_2D, _textureManager.getTexture(TextureManager::EXIT_TEXTURE));
     glUniform1i(_uTexture, 0);
@@ -575,23 +576,6 @@ void DrawingProgram::drawEntry(float x, float y, float z, int width, int height,
     DrawUtils::setUniformMatrix(MVMMatrix, _camera.getViewMatrix(), _projMatrix, _uMVPMatrix, _uMVMatrix,
                                 _uNormalMatrix);
 
-    glBindVertexArray(_vao);
-    glDrawArrays(GL_TRIANGLES, 0, 6);
-    glBindVertexArray(0);
-
-    drawModel(LADDER_MODEL, vec3(x, y, -z), DirectionType::SOUTH);
-}
-
-void DrawingProgram::drawExit(float x, float y, float z, int width, int height, int numWall)
-{
-    glBindTexture(GL_TEXTURE_2D, _textureManager.getTexture(TextureManager::EXIT_TEXTURE));
-    glUniform1i(_uTexture, 0);
-    mat4 MVMMatrix = mat4(1);
-    MVMMatrix = translate(MVMMatrix, vec3(x, y + 0.99, -z) - ModelTransformations::getGlobalTranslate());
-    MVMMatrix = rotate(MVMMatrix, radians(90.f), vec3(1, 0, 0));
-    MVMMatrix = scale(MVMMatrix, vec3(1. / 1.4) * ModelTransformations::getGlobalScale());
-    DrawUtils::setUniformMatrix(MVMMatrix, _camera.getViewMatrix(), _projMatrix, _uMVPMatrix, _uMVMatrix,
-                                _uNormalMatrix);
     glBindVertexArray(_vao);
     glDrawArrays(GL_TRIANGLES, 0, 6);
     glBindVertexArray(0);
@@ -662,13 +646,13 @@ void DrawingProgram::drawWall(float x, float y, float z, DirectionType wallOrien
     glBindVertexArray(0);
 }
 
-void DrawingProgram::drawFloorAndCeiling(float x, float y, float z)
+void DrawingProgram::drawFloorAndCeiling(float x, float y, float z, const std::string &floorTextureName)
 {
     glUniform3fv(_uLightPosition_vs, 1, value_ptr(_camera.getViewMatrix() * vec4(_camera.getPosition(), 1)));
     glUniform1i(glGetUniformLocation(_program.getGLId(), "uIsAModel"), false);
 
     // Floor
-    glBindTexture(GL_TEXTURE_2D, _textureManager.getTexture(TextureManager::FLOOR_TEXTURE));
+    glBindTexture(GL_TEXTURE_2D, _textureManager.getTexture(floorTextureName));
     glUniform1i(_uTexture, 0);
     mat4 MVMMatrix = mat4(1);
     MVMMatrix = translate(MVMMatrix, vec3(x, y - 0.5, -z) + ModelTransformations::getGlobalTranslate());
@@ -696,6 +680,5 @@ void DrawingProgram::updatePlayer(Player &player)
 {
     _textManager.updatePlayerTexts(player);
 }
-
 
 

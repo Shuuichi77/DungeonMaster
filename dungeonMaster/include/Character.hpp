@@ -13,8 +13,6 @@ protected:
     int          _money;
     unsigned int _attack;
 
-    void move(const DirectionType &nextDirectionType);
-
 public:
     ~Character() override = default;
 

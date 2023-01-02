@@ -52,14 +52,16 @@ void Game::initMap()
     _camera.setCameraDirection(startingDir);
 
     _map = {
-            { WALL, EMPTY, ENTRY, EMPTY, WALL,  WALL },
-            { WALL, WALL,  EMPTY, WALL,  EMPTY, WALL },
-            { WALL, WALL,  EMPTY, EMPTY, EMPTY, WALL },
-            { WALL, EMPTY, EMPTY, EMPTY, EMPTY, WALL },
-            { WALL, WALL,  EMPTY, EMPTY, EMPTY, WALL },
-            { WALL, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY },
-            { WALL, EMPTY, WALL,  WALL,  EMPTY, WALL },
-            { WALL, WALL,  WALL,  WALL,  EXIT,  WALL },
+            { WALL, WALL,  ENTRY, EMPTY, WALL,  EMPTY, EMPTY, EMPTY, WALL },
+            { WALL, WALL,  EMPTY, WALL,  EMPTY, EMPTY, EMPTY, EMPTY, WALL },
+            { WALL, WALL,  EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, WALL },
+            { WALL, WATER, WATER, WATER, WATER, EMPTY, EMPTY, EMPTY, WALL },
+            { WALL, WATER, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, WALL },
+            { WALL, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, WALL },
+            { WALL, WALL,  EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, WALL },
+            { WALL, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY },
+            { WALL, EMPTY, WALL,  WALL,  EMPTY, EMPTY, EMPTY, EMPTY, WALL },
+            { WALL, WALL,  WALL,  WALL,  EXIT,  EMPTY, EMPTY, EMPTY, WALL },
     };
 
     int      nbMaxWall = _map.size() * _map.size();
@@ -83,42 +85,42 @@ void Game::initMap()
                                                              _windowWidth,
                                                              _windowHeight);
 
-    _characterManager->addMonster(Utils::make_unique<Monster>(MonsterType::ARMOGOHMA,
-                                                              vec3(3, 0, -2),
-                                                              DirectionType::WEST));
-
-    _characterManager->addMonster(Utils::make_unique<Monster>(MonsterType::DARKRAI,
-                                                              vec3(4, 0, -5),
-                                                              DirectionType::SOUTH));
-
-    _characterManager->addMonster(Utils::make_unique<Monster>(MonsterType::KING_BOO,
-                                                              vec3(2, 0, -5),
-                                                              DirectionType::SOUTH));
-
-    _characterManager->addInteractableObject(
-            Utils::make_unique<InteractableObject>(InteractableObjectType::INTERACTABLE_CHEST_KEY,
-                                                   vec3(1, 0, -3),
-                                                   DirectionType::EAST));
-
+//    _characterManager->addMonster(Utils::make_unique<Monster>(MonsterType::ARMOGOHMA,
+//                                                              vec3(3, 0, -2),
+//                                                              DirectionType::WEST));
+//
+//    _characterManager->addMonster(Utils::make_unique<Monster>(MonsterType::DARKRAI,
+//                                                              vec3(4, 0, -5),
+//                                                              DirectionType::SOUTH));
+//
+//    _characterManager->addMonster(Utils::make_unique<Monster>(MonsterType::KING_BOO,
+//                                                              vec3(2, 0, -7),
+//                                                              DirectionType::SOUTH));
+////
+////    _characterManager->addInteractableObject(
+////            Utils::make_unique<InteractableObject>(InteractableObjectType::INTERACTABLE_CHEST_KEY,
+////                                                   vec3(1, 0, -3),
+////                                                   DirectionType::EAST));
+////
+//////    _characterManager->addInteractableObject(
+//////            Utils::make_unique<InteractableObject>(InteractableObjectType::INTERACTABLE_CHEST_WEAPON_02,
+//////                                                   vec3(2, 0, -3),
+//////                                                   DirectionType::NORTH));
+////
+////    _characterManager->addInteractableObject(
+////            Utils::make_unique<InteractableObject>(InteractableObjectType::INTERACTABLE_CHEST_FAIRY,
+////                                                   vec3(3, 0, -3),
+////                                                   DirectionType::SOUTH));
+////
+////    _characterManager->addInteractableObject(
+////            Utils::make_unique<InteractableObject>(InteractableObjectType::INTERACTABLE_CHEST_WEAPON_03,
+////                                                   vec3(3, 0, -4),
+////                                                   DirectionType::WEST));
+//
 //    _characterManager->addInteractableObject(
-//            Utils::make_unique<InteractableObject>(InteractableObjectType::INTERACTABLE_CHEST_WEAPON_02,
-//                                                   vec3(2, 0, -3),
-//                                                   DirectionType::NORTH));
-
-    _characterManager->addInteractableObject(
-            Utils::make_unique<InteractableObject>(InteractableObjectType::INTERACTABLE_CHEST_FAIRY,
-                                                   vec3(3, 0, -3),
-                                                   DirectionType::SOUTH));
-
-    _characterManager->addInteractableObject(
-            Utils::make_unique<InteractableObject>(InteractableObjectType::INTERACTABLE_CHEST_WEAPON_03,
-                                                   vec3(3, 0, -4),
-                                                   DirectionType::WEST));
-
-    _characterManager->addInteractableObject(
-            Utils::make_unique<InteractableObject>(InteractableObjectType::INTERACTABLE_DOOR,
-                                                   vec3(4, 0, -6),
-                                                   DirectionType::SOUTH));
+//            Utils::make_unique<InteractableObject>(InteractableObjectType::INTERACTABLE_DOOR,
+//                                                   vec3(4, 0, -6),
+//                                                   DirectionType::SOUTH));
 }
 
 void Game::initPtr()

@@ -50,14 +50,15 @@ private:
     std::vector<glm::vec3> getInteractablesPos(std::vector<std::unique_ptr<Monster>> &monsters,
                                                std::vector<std::unique_ptr<InteractableObject>> &interactableObjects);
 
-    bool isPathWalkableVertically(int x, int starting, int ending, const std::vector<std::vector<MapElement>> &map,
+    bool isPathWalkableVertically(const glm::vec3 &playerPosition, const glm::vec3 &monsterPosition,
+                                  const std::vector<std::vector<MapElement>> &map,
                                   std::vector<std::unique_ptr<Monster>> &monsters,
                                   std::vector<std::unique_ptr<InteractableObject>> &interactableObjects);
 
-    bool
-    isPathWalkableHorizontally(int z, float starting, float ending, const std::vector<std::vector<MapElement>> &map,
-                               std::vector<std::unique_ptr<Monster>> &monsters,
-                               std::vector<std::unique_ptr<InteractableObject>> &interactableObjects);
+    bool isPathWalkableHorizontally(const glm::vec3 &playerPosition, const glm::vec3 &monsterPosition,
+                                    const std::vector<std::vector<MapElement>> &map,
+                                    std::vector<std::unique_ptr<Monster>> &monsters,
+                                    std::vector<std::unique_ptr<InteractableObject>> &interactableObjects);
 
     friend class CharacterManager;
 
@@ -69,4 +70,8 @@ public:
     ModelType getModelType() const override { return _modelType; }
 
 
+    static bool isNextPositionWater(const glm::vec3 &nextPosition, const std::vector<std::vector<MapElement>> &map);
+
+    void
+    moveIfGoodDirectionAndNotWater(const DirectionType &nextDirection, const std::vector<std::vector<MapElement>> &map);
 };

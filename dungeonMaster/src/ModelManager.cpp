@@ -247,29 +247,34 @@ ModelManager::drawAllModels(const glimac::Program &program, const mat4 &projMatr
     {
         for (const auto &monster: _monstersToDraw)
         {
-            modelType = monster->getModelType();
-            Model model = _models.at(modelType);
-            drawModel(modelType, monster->getPosition(), monster->getDirectionType(), program, projMatrix,
-                      uMVPMatrix, uMVMatrix, uNormalMatrix);
+            if (monster != nullptr)
+            {
+                modelType = monster->getModelType();
+                Model model = _models.at(modelType);
+                drawModel(modelType, monster->getPosition(), monster->getDirectionType(), program, projMatrix,
+                          uMVPMatrix, uMVMatrix, uNormalMatrix);
+            }
+
         }
 
         for (const auto &interactable: _interactableObjectsToDraw)
         {
-            modelType = interactable->getModelType();
-            Model model = _models.at(modelType);
-
-            if (modelType == ModelType::DOOR_MODEL)
+            if (interactable != nullptr)
             {
-                drawDoor(interactable->getPosition(), interactable->getDirectionType(), program, projMatrix,
-                         uMVPMatrix, uMVMatrix, uNormalMatrix);
-            }
-            else
-            {
-                drawModel(modelType, interactable->getPosition(), interactable->getDirectionType(), program,
-                          projMatrix, uMVPMatrix, uMVMatrix, uNormalMatrix);
-            }
+                modelType = interactable->getModelType();
+                Model model = _models.at(modelType);
 
-
+                if (modelType == ModelType::DOOR_MODEL)
+                {
+                    drawDoor(interactable->getPosition(), interactable->getDirectionType(), program, projMatrix,
+                             uMVPMatrix, uMVMatrix, uNormalMatrix);
+                }
+                else
+                {
+                    drawModel(modelType, interactable->getPosition(), interactable->getDirectionType(), program,
+                              projMatrix, uMVPMatrix, uMVMatrix, uNormalMatrix);
+                }
+            }
         }
     } catch (std::out_of_range &e)
     {

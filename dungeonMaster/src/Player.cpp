@@ -1,6 +1,5 @@
 #include "../include/Player.hpp"
 #include "../include/Utils.hpp"
-#include <iostream>
 #include <memory>
 
 Player::Player(const glm::vec3 &position, const DirectionType &directionType)
@@ -36,13 +35,10 @@ void Player::changeWeapon(unsigned int index)
 {
     if (index != 0 && index < _weapons.size())
     {
-        std::unique_ptr<Weapon> weapon = std::move(_weapons[0]);
-        _weapons[0]     = std::move(std::move(_weapons[index]));
-        _weapons[index] = std::move(weapon);
-
-        WeaponType weaponType = _weaponsTypes[0];
-        _weaponsTypes[0]     = _weaponsTypes[index];
-        _weaponsTypes[index] = weaponType;
+        if (_weapons[0] != nullptr && _weapons[index] != nullptr)
+        {
+            std::swap(_weapons[0], _weapons[index]);
+        }
     }
 }
 
