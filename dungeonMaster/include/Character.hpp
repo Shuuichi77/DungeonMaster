@@ -12,27 +12,21 @@ protected:
     int          _health;
     int          _money;
     unsigned int _attack;
+    int          _defense;
 
 public:
     ~Character() override = default;
 
-    Character(unsigned int health, unsigned int attack, unsigned int money, const glm::vec3 &position,
-              const DirectionType &directionType);
+    Character(unsigned int health, unsigned int attack, int _defense, unsigned int money,
+              const glm::vec3 &position, const DirectionType &directionType);
 
     unsigned int getHealth() const { return _health; }
 
     int getMoney() const { return _money; }
 
-    bool loseHealth(unsigned int damage)
-    {
-        _health -= damage;
-        return _health <= 0;
-    }
+    virtual void addHealth(unsigned int health) { _health += health; }
 
     virtual unsigned int getAttack() const { return _attack; }
 
-    virtual void addHealth(unsigned int health)
-    {
-        _health += health;
-    }
+    virtual bool loseHealth(int damage);
 };

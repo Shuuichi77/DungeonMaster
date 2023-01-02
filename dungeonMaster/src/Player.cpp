@@ -3,7 +3,7 @@
 #include <memory>
 
 Player::Player(const glm::vec3 &position, const DirectionType &directionType)
-        : Character(BASE_HEALTH_PLAYER, 0, 0, position, directionType)
+        : Character(BASE_HEALTH_PLAYER, 0, BASE_DEFENSE_PLAYER, 0, position, directionType)
 {
     addWeapon(FIRST_WEAPON_TYPE);
 }
@@ -38,6 +38,7 @@ void Player::changeWeapon(unsigned int index)
         if (_weapons[0] != nullptr && _weapons[index] != nullptr)
         {
             std::swap(_weapons[0], _weapons[index]);
+            std::swap(_weaponsTypes[0], _weaponsTypes[index]);
         }
     }
 }
@@ -115,6 +116,32 @@ const std::unique_ptr<Weapon> &Player::getCurrentWeapon() const
     assert(_weapons[0] != nullptr && "Player has no weapon");
 
     return _weapons[0];
+}
+
+bool Player::loseHealth(int damage)
+{
+    _health -= std::max(damage - _defense, 0);
+    if (_health <= 0)
+    {
+        for (auto it = _items.begin(); it != _items.end(); ++it)
+        {
+            if (*it == FAIRY)
+            {
+                _health = BASE_HEALTH_PLAYER;
+                it      = _items.erase(it);
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    return false;
+}
+
+bool Player::hasEnoughMoneyAndMonsterKilled(unsigned int money, unsigned int nbMonstersKilled) const
+{
+    return _money >= money && _nbMonstersKilled >= nbMonstersKilled;
 }
 
 

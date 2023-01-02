@@ -20,6 +20,7 @@ ModelTransformations::ModelTransformations()
     addMoneyModelTransformation();
     addDoorModelTransformation();
     addInventoryModelTransformation();
+    addMenuModelTransformation();
     addHealthPotionModelTransformation();
     addMilkModelTransformation();
     addFairyModelTransformation();
@@ -293,6 +294,18 @@ void ModelTransformations::addInventoryModelTransformation()
     modelTransformation.isFix       = true;
 
     addModelTransformation(INVENTORY_MODEL, modelTransformation);
+}
+
+void ModelTransformations::addMenuModelTransformation()
+{
+    ModelTransformation modelTransformation;
+
+    modelTransformation.translation = vec3(0, 0.25, -0.71) - ModelTransformations::getGlobalTranslate();
+    modelTransformation.rotation    = vec3(0.f, 0.f, 0.f);
+    modelTransformation.scale       = vec3(1.f, 1.f, 1.f);
+    modelTransformation.isFix       = true;
+
+    addModelTransformation(MENU_MODEL, modelTransformation);
 }
 
 

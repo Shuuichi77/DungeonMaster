@@ -2,7 +2,7 @@
 #include "../include/TextureManager.hpp"
 
 Interface::Interface(Player &player, unsigned int windowWidth, unsigned int windowHeight,
-                     ModelManager &modelManager, const TextureManager &textureManager, TextManager &textManager,
+                     ModelManager &modelManager, const TextureManager &textureManager,
                      Program &program, FreeflyCamera &camera, mat4 &projMatrix, GLint &uMVPMatrix, GLint &uMVMatrix,
                      GLint &uNormalMatrix, GLint &uTexture, GLuint &vao)
         : _player(player)
@@ -10,7 +10,6 @@ Interface::Interface(Player &player, unsigned int windowWidth, unsigned int wind
         , _windowHeight(windowHeight)
         , _modelManager(modelManager)
         , _textureManager(textureManager)
-        , _textManager(textManager)
         , _program(program)
         , _camera(camera)
         , _projMatrix(projMatrix)
@@ -52,8 +51,8 @@ void Interface::drawInventoryBackground()
 
     ModelTransformation modelTransformation = _modelManager.getModelTransformations().getModelTransformation(
             INVENTORY_MODEL);
-
-    mat4 MVMMatrix = _modelManager.applyModelTransformation(modelTransformation, _camera.getPosition());
+    mat4                MVMMatrix           = _modelManager.applyModelTransformation(modelTransformation,
+                                                                                     _camera.getPosition());
 
     DrawUtils::setUniformMatrix(MVMMatrix, _camera.getViewMatrix(), _projMatrix, _uMVPMatrix, _uMVMatrix,
                                 _uNormalMatrix);

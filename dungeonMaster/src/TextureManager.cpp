@@ -9,10 +9,14 @@ TextureManager::TextureManager(const glimac::FilePath &applicationPath)
     loadTextureFromFile(WALL_TEXTURE_1, "wall_01.png");
     loadTextureFromFile(WALL_TEXTURE_2, "wall_02.png");
     loadTextureFromFile(WALL_TEXTURE_3, "wall_03.png");
-    loadTextureFromFile(FLOOR_TEXTURE, "floor_01.png");
+    loadTextureFromFile(FLOOR_TEXTURE, "floor.png");
     loadTextureFromFile(WATER_TEXTURE, "water.png");
-    loadTextureFromFile(INVENTORY_TEXTURE, "inventory_05.png");
+    loadTextureFromFile(INVENTORY_TEXTURE, "inventory.png");
     loadTextureFromFile(EXIT_TEXTURE, "black.jpg");
+    loadTextureFromFile(MENU_START_TEXTURE, "menuStart.png");
+    loadTextureFromFile(MENU_WIN_TEXTURE, "menuWin.png");
+    loadTextureFromFile(MENU_LOSE_TEXTURE, "menuLose.png");
+
 }
 
 GLuint TextureManager::getTexture(const std::string &textureName) const
@@ -58,18 +62,21 @@ GLuint TextureManager::getWallTexture(int numWall) const
 
 void TextureManager::addRandomWallTexture()
 {
-    std::string textureName;
-    switch (rand() % 3)
+    for (int i = 0; i < 3; i++)
     {
-        case 0: textureName = TextureManager::WALL_TEXTURE_1;
-            break;
-        case 1: textureName = TextureManager::WALL_TEXTURE_2;
-            break;
-        case 2: textureName = TextureManager::WALL_TEXTURE_3;
-            break;
-    }
+        std::string textureName;
+        switch (rand() % 3)
+        {
+            case 0: textureName = TextureManager::WALL_TEXTURE_1;
+                break;
+            case 1: textureName = TextureManager::WALL_TEXTURE_2;
+                break;
+            case 2: textureName = TextureManager::WALL_TEXTURE_3;
+                break;
+        }
 
-    _wallsTextures.emplace_back(textureName);
+        _wallsTextures.emplace_back(textureName);
+    }
 }
 
 

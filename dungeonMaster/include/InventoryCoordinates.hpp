@@ -8,7 +8,8 @@ enum InventoryCoordinatesType
     NOT_INVENTORY,
     ITEM,
     WEAPON,
-    ARROW
+    LEFT_ARROW,
+    RIGHT_ARROW,
 };
 
 class InventoryCoordinates
@@ -20,14 +21,14 @@ private:
     static constexpr const float ITEMS_SECOND_COLUMN_LEFT_BORDER  = 0.2181f;
     static constexpr const float ITEMS_SECOND_COLUMN_RIGHT_BORDER = 0.3287f;
 
+    static constexpr const float LEFT_ARROW_LEFT_BORDER  = 0.375235f;
+    static constexpr const float LEFT_ARROW_RIGHT_BORDER = 0.488743f;
 
-    static constexpr const float ARROWS_LEFT_BORDER   = 0.3762f;
-    static constexpr const float ARROWS_CENTER_BORDER = 0.5f;
-    static constexpr const float ARROWS_RIGHT_BORDER  = 0.6212f;
+    static constexpr const float RIGHT_ARROW_LEFT_BORDER  = 0.515947f;
+    static constexpr const float RIGHT_ARROW_RIGHT_BORDER = 0.620075f;
 
-    static constexpr const float WEAPONS_COLUMN_LEFT_BORDER  = 0.3762f;
+    static constexpr const float WEAPONS_COLUMN_LEFT_BORDER  = 0.669794f;
     static constexpr const float WEAPONS_COLUMN_RIGHT_BORDER = 0.9225f;
-
 
     static constexpr const float INVENTORY_FIRST_ROW_TOP_BORDER    = 0.8025f;
     static constexpr const float INVENTORY_FIRST_ROW_BOTTOM_BORDER = 0.8583f;

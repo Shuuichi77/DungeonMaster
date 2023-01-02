@@ -1,28 +1,41 @@
 #include "../include/Game.hpp"
 #include "../include/Utils.hpp"
 
+#include <fstream>
+#include <string>
 #include <SDL/SDL_ttf.h>
 #include <glm/glm.hpp>
 #include <algorithm>
 #include <iostream>
 #include <glimac/common.hpp>
+
+#include <glimac/Image.hpp>
 #include <utility>
 
-
 Game::Game(glimac::FilePath filePath, unsigned int windowHeight)
-        :
-        _camera()
+        : _camera()
         , _applicationPath(std::move(filePath))
         , _windowWidth(windowHeight * 4 / 3)
         , _windowHeight(windowHeight)
         , _windowManager(windowHeight * 4 / 3, windowHeight, "Dungeon Master")
-        , _cameraManager(_camera, _windowManager, _gameWin) {}
+        , _cameraManager(_camera, _windowManager)
+        , _mapName { DEFAULT_MAP } {}
+
+
+Game::Game(glimac::FilePath filePath, unsigned int windowHeight, std::string mapName)
+        : _camera()
+        , _applicationPath(std::move(filePath))
+        , _windowWidth(windowHeight * 4 / 3)
+        , _windowHeight(windowHeight)
+        , _windowManager(windowHeight * 4 / 3, windowHeight, "Dungeon Master")
+        , _cameraManager(_camera, _windowManager)
+        , _mapName { std::move(mapName) } {}
+
 
 int Game::initGlew()
 {
     srand(time(nullptr));
 
-    // Initialize glew for OpenGL3+ support
     GLenum glewInitError = glewInit();
     if (GLEW_OK != glewInitError)
     {
@@ -40,87 +53,210 @@ int Game::initGlew()
     return EXIT_SUCCESS;
 }
 
+void Game::initColors(int maxColor)
+{
+    if (maxColor != 255)
+    {
+        WALL_COLOR /= 255;
+        EMPTY_COLOR /= 255;
+        DOOR_COLOR /= 255;
+        WATER_COLOR /= 255;
+        ENTRY_COLOR /= 255;
+        EXIT_COLOR /= 255;
+    }
+
+}
+
+MapElement Game::getMapElementFromColor(const vec3 &color)
+{
+    if (ENTRY_COLOR == color)
+    {
+        return MapElement::ENTRY;
+    }
+    else if (EMPTY_COLOR == color)
+    {
+        return MapElement::EMPTY;
+    }
+    else if (WATER_COLOR == color)
+    {
+        return MapElement::WATER;
+    }
+    else if (EXIT_COLOR == color)
+    {
+        return MapElement::EXIT;
+    }
+    else if (WALL_COLOR == color)
+    {
+        _textureManager->addRandomWallTexture();
+        return MapElement::WALL;
+    }
+    else if (DOOR_COLOR == color)
+    {
+        return MapElement::DOOR;
+    }
+
+    else
+    {
+        return MapElement::UNKNOWN_MAP_ELEMENT;
+    }
+}
+
+std::vector<std::vector<MapElement>> Game::readMap(const std::string &mapFile,
+                                                   std::vector<std::unique_ptr<InteractableObject>> &doors)
+{
+    std::ifstream input(_applicationPath.dirPath() + "/maps/" + mapFile);
+    if (!input)
+    {
+        std::cerr << "Error while opening the map file" << std::endl;
+        exit(EXIT_FAILURE);
+    }
+
+    std::string line;
+    getline(input, line);
+    string ppmFormat = line;
+    if (ppmFormat == "P6")
+    {
+        // TODO: handle P6 format
+        std::cerr << "Error while reading the map file: P6 format not supported (P3 only)" << std::endl;
+        exit(EXIT_FAILURE);
+    }
+
+    // Needs to ignore my .ppm 2nd line in header which is "# Created by GIMP version 2.10.18 PNM plug-in"
+    int      nbLineToIgnore = 1;
+    for (int i              = 0; i < nbLineToIgnore; ++i)
+    {
+        getline(input, line);
+    }
+
+    getline(input, line);
+    int mapWidth  = std::stoi(line.substr(0, line.find(' ')));
+    int mapHeight = std::stoi(line.substr(line.find(' ') + 1, line.size()));
+
+    getline(input, line);
+    int maxColor                           = std::stoi(line);
+    initColors(maxColor);
+
+    std::vector<std::vector<MapElement>> map;
+    for (int                             i = 0; i < mapHeight; ++i)
+    {
+        std::vector<MapElement> row;
+        for (int                j = 0; j < mapWidth; ++j)
+        {
+            int color[3];
+            getline(input, line);
+            color[0] = std::stoi(line.substr(0, line.find(' ')));
+
+            getline(input, line);
+            color[1] = std::stoi(line.substr(0, line.find(' ')));
+
+            getline(input, line);
+            color[2] = std::stoi(line.substr(0, line.find(' ')));
+
+            MapElement mapElement = getMapElementFromColor(vec3(color[0], color[1], color[2]));
+
+            if (mapElement == UNKNOWN_MAP_ELEMENT)
+            {
+                std::cerr << "Error while reading the map file: unknown map element at pixel "
+                        << i << ", " << j << "with color : " << color[0] << ", " << color[1] << ", " << color[2]
+                        << std::endl;
+                row.push_back(MapElement::EMPTY);
+            }
+
+            if (mapElement != MapElement::DOOR)
+            {
+                if (mapElement == MapElement::ENTRY)
+                {
+                    _camera.setPosition(vec3(j, 0.25f, -(mapHeight - i - 1)));
+                }
+
+                else if (mapElement == MapElement::EXIT)
+                {
+                    _exitPosition = vec3(j, 0., -(mapHeight - i - 1));
+                }
+
+                row.push_back(mapElement);
+            }
+            else
+            {
+                doors.emplace_back(Utils::make_unique<InteractableObject>(InteractableObjectType::INTERACTABLE_DOOR,
+                                                                          vec3(j, 0, -(mapHeight - i - 1)),
+                                                                          DirectionType::SOUTH));
+                row.push_back(MapElement::EMPTY);
+            }
+        }
+        map.insert(map.begin(), row);
+    }
+
+    return map;
+}
+
+std::string Game::readDungeonFile(const string &dungeonFile,
+                                  vector<std::unique_ptr<InteractableObject>> &interactableObjects,
+                                  vector<std::unique_ptr<Monster>> &monsters)
+{
+    std::fstream input;
+    input.open(_applicationPath.dirPath() + "/maps/" + dungeonFile, ios::in);
+
+    if (!input.is_open())
+    {
+        std::cerr << "Error while opening the dungeon file: " << _applicationPath.dirPath() + "/maps/" + dungeonFile
+                << std::endl;
+        exit(EXIT_FAILURE);
+    }
+
+    string line;
+    getline(input, line); // ignore first line
+
+    getline(input, line);
+    string mapFile = line;
+
+    getline(input, line);
+    int nbChests = std::stoi(line);
+
+    for (int i = 0; i < nbChests; ++i)
+    {
+        getline(input, line);
+        InteractableObject::createInteractableObject(line, interactableObjects);
+    }
+
+    getline(input, line);
+    int      nbMonsters = std::stoi(line);
+    for (int i          = 0; i < nbMonsters; ++i)
+    {
+        getline(input, line);
+        Monster::createMonster(line, monsters);
+    }
+
+    getline(input, line);
+    _nbMoneyNeededToFinishGame = std::stoi(line);
+
+    getline(input, line);
+    _nbMonsterKillNeededToFinishGame = std::stoi(line);
+
+    input.close();
+
+    return mapFile;
+}
+
 void Game::initMap()
 {
-    _textureManager = Utils::make_unique<TextureManager>(_applicationPath);
+    if (!_retryGame)
+    {
+        _textureManager = Utils::make_unique<TextureManager>(_applicationPath);
+    }
 
-
-    // TODO: Read files to add ennemies
-
-    // TODO: Camera direction en fonction d'ENTRY
     DirectionType startingDir = DirectionType::NORTH;
     _camera.setCameraDirection(startingDir);
 
-    _map = {
-            { WALL, WALL,  ENTRY, EMPTY, WALL,  EMPTY, EMPTY, EMPTY, WALL },
-            { WALL, WALL,  EMPTY, WALL,  EMPTY, EMPTY, EMPTY, EMPTY, WALL },
-            { WALL, WALL,  EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, WALL },
-            { WALL, WATER, WATER, WATER, WATER, EMPTY, EMPTY, EMPTY, WALL },
-            { WALL, WATER, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, WALL },
-            { WALL, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, WALL },
-            { WALL, WALL,  EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, WALL },
-            { WALL, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY },
-            { WALL, EMPTY, WALL,  WALL,  EMPTY, EMPTY, EMPTY, EMPTY, WALL },
-            { WALL, WALL,  WALL,  WALL,  EXIT,  EMPTY, EMPTY, EMPTY, WALL },
-    };
+    std::vector<std::unique_ptr<InteractableObject>> interactableObjects;
+    std::vector<std::unique_ptr<Monster>>            monsters;
 
-    int      nbMaxWall = _map.size() * _map.size();
-    for (int i         = 0; i < nbMaxWall; ++i)
-    {
-        _textureManager->addRandomWallTexture();
-    }
-    for (int i         = 0; i < _map.size(); ++i)
-    {
-        for (int j = 0; j < _map[i].size(); ++j)
-        {
-            if (_map[i][j] == ENTRY)
-            {
-                _camera.setPosition(vec3(j, 0.25f, i));
-                break;
-            }
-        }
-    }
+    string mapFile = readDungeonFile(_mapName, interactableObjects, monsters);
+    _map = readMap(mapFile, interactableObjects);
 
     _characterManager = Utils::make_unique<CharacterManager>(_camera.getPosition(), _camera.getCameraDirection(),
-                                                             _windowWidth,
-                                                             _windowHeight);
-
-//    _characterManager->addMonster(Utils::make_unique<Monster>(MonsterType::ARMOGOHMA,
-//                                                              vec3(3, 0, -2),
-//                                                              DirectionType::WEST));
-//
-//    _characterManager->addMonster(Utils::make_unique<Monster>(MonsterType::DARKRAI,
-//                                                              vec3(4, 0, -5),
-//                                                              DirectionType::SOUTH));
-//
-//    _characterManager->addMonster(Utils::make_unique<Monster>(MonsterType::KING_BOO,
-//                                                              vec3(2, 0, -7),
-//                                                              DirectionType::SOUTH));
-////
-////    _characterManager->addInteractableObject(
-////            Utils::make_unique<InteractableObject>(InteractableObjectType::INTERACTABLE_CHEST_KEY,
-////                                                   vec3(1, 0, -3),
-////                                                   DirectionType::EAST));
-////
-//////    _characterManager->addInteractableObject(
-//////            Utils::make_unique<InteractableObject>(InteractableObjectType::INTERACTABLE_CHEST_WEAPON_02,
-//////                                                   vec3(2, 0, -3),
-//////                                                   DirectionType::NORTH));
-////
-////    _characterManager->addInteractableObject(
-////            Utils::make_unique<InteractableObject>(InteractableObjectType::INTERACTABLE_CHEST_FAIRY,
-////                                                   vec3(3, 0, -3),
-////                                                   DirectionType::SOUTH));
-////
-////    _characterManager->addInteractableObject(
-////            Utils::make_unique<InteractableObject>(InteractableObjectType::INTERACTABLE_CHEST_WEAPON_03,
-////                                                   vec3(3, 0, -4),
-////                                                   DirectionType::WEST));
-//
-//    _characterManager->addInteractableObject(
-//            Utils::make_unique<InteractableObject>(InteractableObjectType::INTERACTABLE_DOOR,
-//                                                   vec3(4, 0, -6),
-//                                                   DirectionType::SOUTH));
+                                                             _windowWidth, _windowHeight, interactableObjects,
+                                                             monsters);
 }
 
 void Game::initPtr()
@@ -131,35 +267,34 @@ void Game::initPtr()
                                                          _characterManager->getMonsters(),
                                                          _characterManager->getInteractableObjects());
     _drawingProgram->init();
-    std::cout << "Ptr initialized" << std::endl;
+    _menu = Utils::make_unique<Menu>(_windowWidth, _windowHeight, _applicationPath, _drawingProgram, _windowManager);
 }
 
-void Game::updatePlayer()
+bool Game::gameWin() const
 {
-    // TODO: _characterManager.updatePlayer();
-    _drawingProgram->updatePlayer(_characterManager->getPlayer());
+    return Utils::cmpff(_camera.getPosition().x, _exitPosition.x) &&
+           Utils::cmpff(_camera.getPosition().z, _exitPosition.z) &&
+           _characterManager->getPlayer().hasEnoughMoneyAndMonsterKilled(_nbMoneyNeededToFinishGame,
+                                                                         _nbMonsterKillNeededToFinishGame);
 }
 
 void Game::loop()
 {
-    while (!_gameWin && !_gamelLost)
+    while (!_gameInterrupted && (!gameWin() && !_gameLost))
     {
         SDL_Event e;
         while (_windowManager.pollEvent(e))
         {
             switch (e.type)
             {
-                case SDL_QUIT:_gameWin = true;
+                case SDL_QUIT:_gameInterrupted = true;
                     break;
 
                 case SDL_MOUSEBUTTONDOWN:
                     if (e.button.button == SDL_BUTTON_LEFT)
                     {
-                        if (_characterManager->leftClick(_camera.getPosition(), _camera.getCameraDirection(),
-                                                         _windowManager.getMousePosition()))
-                        {
-                            updatePlayer();
-                        }
+                        _characterManager->leftClick(_camera.getCameraDirection(),
+                                                     _windowManager.getMousePosition(), _camera);
                     }
                     break;
 
@@ -172,30 +307,47 @@ void Game::loop()
 
         if (_characterManager->updateMonsters(_map))
         {
-            std::cout << "LOST" << std::endl;
-            _gamelLost = true;
+            _gameLost = true;
             continue;
         }
 
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
         _drawingProgram->drawMap(_map, (int) _map[0].size(), (int) _map.size());
+        _menu->drawMenuInGame(_characterManager->getPlayer());
         _windowManager.swapBuffers();
+    }
+}
+
+void Game::createGame()
+{
+    initMap();
+    initPtr();
+    _menu->drawMenuStarting(_gameInterrupted);
+
+    if (_gameLost)
+    {
+        _gameLost  = false;
+        _retryGame = true;
     }
 }
 
 int Game::run()
 {
-    if (initGlew() == EXIT_FAILURE)
+    if (initGlew())
     {
         return EXIT_FAILURE;
     }
 
-    initMap();
-    initPtr();
-    loop();
-
-    // TODO: menu.displayEndingScreen(_gamelLost, _gameWin);
+    createGame();
+    while (!_gameInterrupted)
+    {
+        loop();
+        if (_menu->drawMenuEnding(gameWin(), _gameLost, _gameInterrupted))
+        {
+            createGame();
+        }
+    }
 
     _textureManager->freeTextures();
 

@@ -57,12 +57,12 @@ std::pair<InventoryCoordinatesType, unsigned int> InventoryCoordinates::getInven
 
         else if (isLeftArrow(mousePosition))
         {
-            return std::make_pair(InventoryCoordinatesType::ARROW, 0);
+            return std::make_pair(InventoryCoordinatesType::LEFT_ARROW, 0);
         }
 
         else if (isRightArrow(mousePosition))
         {
-            return std::make_pair(InventoryCoordinatesType::ARROW, 1);
+            return std::make_pair(InventoryCoordinatesType::RIGHT_ARROW, 1);
         }
     }
 
@@ -138,13 +138,13 @@ bool InventoryCoordinates::isThirdWeapon(const glm::vec2 &mousePosition)
 
 bool InventoryCoordinates::isLeftArrow(const glm::vec2 &mousePosition)
 {
-    return isInCoords(ARROWS_LEFT_BORDER, ARROWS_CENTER_BORDER,
+    return isInCoords(LEFT_ARROW_LEFT_BORDER, LEFT_ARROW_RIGHT_BORDER,
                       INVENTORY_FIRST_ROW_TOP_BORDER, INVENTORY_THIRD_ROW_BOTTOM_BORDER, mousePosition);
 }
 
 bool InventoryCoordinates::isRightArrow(const glm::vec2 &mousePosition)
 {
-    return isInCoords(ARROWS_CENTER_BORDER, ARROWS_RIGHT_BORDER,
+    return isInCoords(RIGHT_ARROW_LEFT_BORDER, RIGHT_ARROW_RIGHT_BORDER,
                       INVENTORY_FIRST_ROW_TOP_BORDER, INVENTORY_THIRD_ROW_BOTTOM_BORDER, mousePosition);
 }
 

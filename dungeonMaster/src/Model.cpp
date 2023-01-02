@@ -163,7 +163,6 @@ Mesh Model::processMesh(aiMesh *mesh, const aiScene *scene)
             }
             else
             {
-                std::cout << "NO COLOR NOR TEXTURES ??" << std::endl;
                 return Mesh { vertices, indices, glm::vec3(0.0f, 0.0f, 0.0f) };
             }
         }

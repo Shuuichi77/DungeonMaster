@@ -17,12 +17,14 @@ enum ItemType
 class Player : public Character
 {
 private:
-    static constexpr const unsigned int MAX_ITEMS_SIZE     = 6;
-    static constexpr const unsigned int MAX_WEAPONS_SIZE   = 3;
-    static constexpr const unsigned int BASE_HEALTH_PLAYER = 10;
-    static constexpr const WeaponType   FIRST_WEAPON_TYPE  = WeaponType::WOODEN_SWORD;
+    static constexpr const unsigned int MAX_ITEMS_SIZE      = 6;
+    static constexpr const unsigned int MAX_WEAPONS_SIZE    = 3;
+    static constexpr const unsigned int BASE_HEALTH_PLAYER  = 10;
+    static constexpr const unsigned int BASE_DEFENSE_PLAYER = 1;
+    static constexpr const WeaponType   FIRST_WEAPON_TYPE   = WeaponType::WOODEN_SWORD;
 
-    unsigned int _nbKeys = 0;
+    unsigned int _nbKeys           = 0;
+    unsigned int _nbMonstersKilled = 0;
 
     std::vector<ItemType>                _items;
     std::vector<std::unique_ptr<Weapon>> _weapons;
@@ -57,7 +59,9 @@ public:
 
     unsigned int getNbKeys() const { return _nbKeys; }
 
-    unsigned getAttack() const override;
+    unsigned int getAttack() const override;
+
+    bool loseHealth(int damage) override;
 
     void useItem(unsigned int index);
 
@@ -65,11 +69,17 @@ public:
 
     bool addWeapon(WeaponType weaponType);
 
+    void addMonsterKilled() { _nbMonstersKilled++; }
+
+    unsigned int getNbMonstersKilled() const { return _nbMonstersKilled; }
+
     const std::unique_ptr<Weapon> &getCurrentWeapon() const;
 
-    const std::vector<WeaponType> getWeaponsTypes() const { return _weaponsTypes; }
+    std::vector<WeaponType> getWeaponsTypes() const { return _weaponsTypes; }
 
     const std::vector<ItemType> &getItems() const { return _items; }
 
     static ModelType getModelTypeFromItemType(ItemType type);
+
+    bool hasEnoughMoneyAndMonsterKilled(unsigned int money, unsigned int nbMonstersKilled) const;
 };

@@ -15,21 +15,18 @@
 #include "Mesh.hpp"
 #include "Model.hpp"
 #include "ModelManager.hpp"
-#include "TextManager.hpp"
 #include "Interface.hpp"
 #include "Text.hpp"
 
 using namespace glm;
 using namespace glimac;
 
-class TextManager;
 
 class DrawingProgram
 {
 private:
     const TextureManager &_textureManager;
     ModelManager         _modelManager;
-    TextManager          _textManager;
     Interface            _interface;
     glimac::Program      _program;
     FreeflyCamera        &_camera;
@@ -67,6 +64,10 @@ private:
     void drawWallAroundMapBorder(float x, float y, float z, int width, int height, int numWall);
 
     void drawLadder(float x, float y, float z);
+
+    void programUse() { _program.use(); }
+
+    friend class Menu;
 
     // ------------------------------ Debug ------------------------------
     float _x = 4.f;
@@ -108,5 +109,9 @@ public:
 
     void drawMap(const std::vector<std::vector<MapElement>> &map, int width, int height);
 
-    void updatePlayer(Player &player);
+    void drawMenuStarting();
+
+    void drawMenuWin();
+
+    void drawMenuLose();
 };

@@ -12,6 +12,8 @@ enum TextType
 class TextFactory
 {
 private:
+    static constexpr const char *FONT_FILE_NAME = "botw_font.ttf";
+
     GLuint                 &_vao;
     GLint                  &_uModelMatrix;
     GLint                  &_uTexture;
@@ -19,6 +21,7 @@ private:
     const glimac::FilePath &_applicationPath;
     const unsigned int     windowWidth;
     const unsigned int     windowHeight;
+
 
     Text createMoneyQtyText(const std::string &text);
 

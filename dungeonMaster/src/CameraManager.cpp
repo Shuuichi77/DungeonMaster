@@ -2,10 +2,9 @@
 #include "../include/CameraManager.hpp"
 #include "../include/Utils.hpp"
 
-CameraManager::CameraManager(FreeflyCamera &camera, glimac::SDLWindowManager &windowManager, bool &gameWin)
+CameraManager::CameraManager(FreeflyCamera &camera, glimac::SDLWindowManager &windowManager)
         : _camera(camera)
-        , _windowManager(windowManager)
-        , _gameWin(gameWin) {}
+        , _windowManager(windowManager) {}
 
 void CameraManager::moveCamera(const SDL_MouseButtonEvent &button,
                                const std::vector<std::vector<MapElement>> &map,
@@ -83,8 +82,8 @@ bool CameraManager::canMoveTowardDirection(DirectionType nextMovementDirectionTy
         }
     }
 
-    int i = Utils::floatToint(-nextPosition.z);
-    int j = Utils::floatToint(nextPosition.x);
+    int i = Utils::floatToInt(-nextPosition.z);
+    int j = Utils::floatToInt(nextPosition.x);
     if (isOutOfMap(i, j, map))
     {
         return false;
@@ -92,14 +91,11 @@ bool CameraManager::canMoveTowardDirection(DirectionType nextMovementDirectionTy
 
     if (map[i][j] == MapElement::WALL || map[i][j] == MapElement::WATER)
     {
-        std::cout << "Wall" << std::endl;
         return false;
     }
 
     if (map[i][j] == MapElement::EXIT)
     {
-        std::cout << "Exit" << std::endl;
-        _gameWin = true;
         return true;
     }
 

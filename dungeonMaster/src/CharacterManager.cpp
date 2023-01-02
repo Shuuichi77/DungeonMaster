@@ -3,22 +3,28 @@
 #include "../include/CharacterManager.hpp"
 
 CharacterManager::CharacterManager(const glm::vec3 &playerPosition, const DirectionType &playerDirectionType,
-                                   unsigned int windowWidth, unsigned int windowHeight)
+                                   unsigned int windowWidth, unsigned int windowHeight,
+                                   std::vector<std::unique_ptr<InteractableObject>> &interableObjects,
+                                   std::vector<std::unique_ptr<Monster>> &monsters)
         : _player(playerPosition, playerDirectionType)
-        , _inventoryCoordinates(windowWidth, windowHeight) {}
+        , _inventoryCoordinates(windowWidth, windowHeight)
+{
+    _interactableObjects = std::move(interableObjects);
+    _monsters            = std::move(monsters);
+}
 
 
-bool CharacterManager::leftClick(const glm::vec3 &playerPosition, const DirectionType &playerDirectionType,
-                                 const glm::vec2 &mousePosition)
+void CharacterManager::leftClick(const DirectionType &playerDirectionType,
+                                 const glm::vec2 &mousePosition, FreeflyCamera &camera)
 {
     int _playerMoney = _player.getMoney();
 
-    if (inventoryIsClicked(mousePosition))
+    if (inventoryIsClicked(mousePosition, camera))
     {
-        return false;
+        return;
     }
 
-    glm::vec3 coordsClicked = getCoordsClicked(playerPosition, playerDirectionType);
+    glm::vec3 coordsClicked = getCoordsClicked(_player.getPosition(), playerDirectionType);
 
     _monsters.erase(std::remove_if(_monsters.begin(), _monsters.end(),
                                    [&coordsClicked, this](
@@ -28,8 +34,8 @@ bool CharacterManager::leftClick(const glm::vec3 &playerPosition, const Directio
                                        {
                                            if (monster->loseHealth(_player.getAttack()))
                                            {
+                                               _player.addMonsterKilled();
                                                _player.addMoney(monster->getMoney());
-                                               std::cout << _player.getMoney() << std::endl;
                                                return true;
                                            }
                                        }
@@ -50,11 +56,9 @@ bool CharacterManager::leftClick(const glm::vec3 &playerPosition, const Directio
 
                                                   return false;
                                               }), _interactableObjects.end());
-
-    return _playerMoney != _player.getMoney();
 }
 
-bool CharacterManager::inventoryIsClicked(const glm::vec2 &mousePosition)
+bool CharacterManager::inventoryIsClicked(const glm::vec2 &mousePosition, FreeflyCamera &camera)
 {
     std::pair<InventoryCoordinatesType, unsigned int> _inventoryTypeNumber = _inventoryCoordinates.getInventoryCoordinatesType(
             mousePosition);
@@ -64,6 +68,10 @@ bool CharacterManager::inventoryIsClicked(const glm::vec2 &mousePosition)
         case InventoryCoordinatesType::ITEM:_player.useItem(_inventoryTypeNumber.second);
             return true;
         case InventoryCoordinatesType::WEAPON:_player.changeWeapon(_inventoryTypeNumber.second);
+            return true;
+        case InventoryCoordinatesType::LEFT_ARROW:camera.rotateLeft(90.f);
+            return true;
+        case InventoryCoordinatesType::RIGHT_ARROW:camera.rotateLeft(-90.f);
             return true;
         default:return false;
     }
@@ -87,18 +95,6 @@ glm::vec3 CharacterManager::getCoordsClicked(const glm::vec3 &playerPosition, co
     }
 
     return coordsClicked;
-}
-
-void CharacterManager::addMonster(std::unique_ptr<Monster> monster)
-{
-    assert(monster != nullptr);
-    _monsters.emplace_back(std::move(monster));
-}
-
-void CharacterManager::addInteractableObject(std::unique_ptr<InteractableObject> interactableObject)
-{
-    assert(interactableObject != nullptr);
-    _interactableObjects.emplace_back(std::move(interactableObject));
 }
 
 bool CharacterManager::updateMonsters(const std::vector<std::vector<MapElement>> &map)

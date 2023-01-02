@@ -69,10 +69,11 @@ mat4 ModelManager::transformMobileModel(mat4 &MVMMatrix, const vec3 &position,
     return MVMMatrix;
 }
 
-mat4 ModelManager::transformFixModel(mat4 &MVMMatrix, const ModelTransformation &modelTransformation)
+mat4 ModelManager::transformFixModel(const FreeflyCamera &camera, mat4 &MVMMatrix,
+                                     const ModelTransformation &modelTransformation)
 {
-    const vec3 &camPos = _camera.getPosition();
-    switch (_camera.getCameraDirection())
+    const vec3 &camPos = camera.getPosition();
+    switch (camera.getCameraDirection())
     {
         case DirectionType::NORTH:
             MVMMatrix = translate(MVMMatrix, vec3(
@@ -119,7 +120,7 @@ mat4 ModelManager::transformFixModel(mat4 &MVMMatrix, const ModelTransformation 
 mat4 ModelManager::applyModelTransformation(const ModelTransformation &modelTransformation, const vec3 &position)
 {
     mat4 MVMMatrix = mat4(1);;
-    return (modelTransformation.isFix ? transformFixModel(MVMMatrix, modelTransformation)
+    return (modelTransformation.isFix ? transformFixModel(_camera, MVMMatrix, modelTransformation)
                                       : transformMobileModel(MVMMatrix, position, modelTransformation));
 }
 

@@ -15,13 +15,16 @@ private:
 
     bool loadTextureFromFile(const char *textureName, const char *imageFile);
 
-    static constexpr const char *WALL_TEXTURE_1    = "wall_1";
-    static constexpr const char *WALL_TEXTURE_2    = "wall_2";
-    static constexpr const char *WALL_TEXTURE_3    = "wall_3";
-    static constexpr const char *FLOOR_TEXTURE     = "floor";
-    static constexpr const char *EXIT_TEXTURE      = "exit";
-    static constexpr const char *INVENTORY_TEXTURE = "inventory";
-    static constexpr const char *WATER_TEXTURE     = "WATER";
+    static constexpr const char *WALL_TEXTURE_1     = "wall_1";
+    static constexpr const char *WALL_TEXTURE_2     = "wall_2";
+    static constexpr const char *WALL_TEXTURE_3     = "wall_3";
+    static constexpr const char *FLOOR_TEXTURE      = "floor";
+    static constexpr const char *EXIT_TEXTURE       = "exit";
+    static constexpr const char *INVENTORY_TEXTURE  = "inventory";
+    static constexpr const char *WATER_TEXTURE      = "water";
+    static constexpr const char *MENU_START_TEXTURE = "startingMenu";
+    static constexpr const char *MENU_LOSE_TEXTURE  = "loseMenu";
+    static constexpr const char *MENU_WIN_TEXTURE   = "winMenu";
 
     friend class DrawingProgram;
 

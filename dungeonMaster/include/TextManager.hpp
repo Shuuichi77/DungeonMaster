@@ -6,13 +6,6 @@
 #include "Player.hpp"
 #include "TextFactory.hpp"
 
-enum WindowState
-{
-    MENU,
-    GAME,
-    LOSE,
-    WIN
-};
 
 class TextManager
 {
@@ -33,13 +26,11 @@ private:
     static const GLuint VERTEX_ATTR_COULEUR  = 1;
 
     std::unordered_map<TextType, Text> _texts;
-    WindowState                        _windowState;
 
-    const unsigned int     _windowWidth;
-    const unsigned int     _windowHeight;
-    const glimac::FilePath _applicationPath;
-    const std::string      _fontFileName;
-    TextFactory            _textFactory;
+    const unsigned int _windowWidth;
+    const unsigned int _windowHeight;
+    const std::string  _fontFileName;
+    TextFactory        _textFactory;
 
     GLuint  _vao;
     GLuint  _vbo;
@@ -54,25 +45,15 @@ private:
 
     void loadVAO();
 
-    void drawMenu();
+    void drawMenuInGame(const Player &player);
+    
+    void initMessages();
 
-    void drawGame();
-
-    void drawLose();
-
-    void drawWin();
+    friend class Menu;
 
 public:
     TextManager(unsigned int windowWidth, unsigned int windowHeight,
-                const glimac::FilePath &applicationPath, std::string fontFileName, const Player &player);
-
-    void updatePlayerTexts(const Player &player);
-
-    void draw();
-
-    void setWindowState();
-
-    void initMessages(const Player &player);
+                const glimac::FilePath &applicationPath);
 };
 
 

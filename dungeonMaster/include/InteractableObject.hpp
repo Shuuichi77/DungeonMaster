@@ -16,6 +16,7 @@ enum InteractableObjectType
     INTERACTABLE_CHEST_WEAPON_01,
     INTERACTABLE_CHEST_WEAPON_02,
     INTERACTABLE_CHEST_WEAPON_03,
+    UNKNOWN_INTERACTABLE_OBJECT_TYPE,
 };
 
 class InteractableObject : public Interactable
@@ -26,6 +27,8 @@ private:
     ModelType              _modelType;
 
     static ModelType getModelTypeFromInteractableObjectType(InteractableObjectType type);
+
+    bool addObjectsToPlayer(Player &player, const InteractableObjectType &interactableObjectType) const;
 
 public:
     explicit InteractableObject(InteractableObjectType type, const glm::vec3 &position,
@@ -38,4 +41,9 @@ public:
     bool interactWithPlayer(Player &player);
 
     ModelType getModelType() const override { return _modelType; }
+
+    static InteractableObjectType getInteractableObjectTypeFromName(const std::string &name);
+
+    static void createInteractableObject(const std::string &string,
+                                         std::vector<std::unique_ptr<InteractableObject>> &interactableObjects);
 };

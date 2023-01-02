@@ -65,7 +65,7 @@ DirectionType FreeflyCamera::getCameraDirection() const
 
 void FreeflyCamera::setPosition(glm::vec3 position)
 {
-    _position = glm::vec3(position.x, position.y, -position.z);
+    _position = glm::vec3(position.x, position.y, position.z);
 }
 
 void FreeflyCamera::setCameraDirection(DirectionType directionType)

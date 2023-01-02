@@ -21,5 +21,6 @@ enum ModelType
     MONEY_MODEL,
     DOOR_MODEL,
     INVENTORY_MODEL,
+    MENU_MODEL,
     NONE // To return a value in function Player::getModelType()
 };

@@ -6,6 +6,7 @@
 #include "InteractableObject.hpp"
 #include "InventoryCoordinates.hpp"
 #include "ChronoBetweenActions.hpp"
+#include "FreeflyCamera.hpp"
 
 #include <glm/glm.hpp>
 #include <memory>
@@ -21,26 +22,23 @@ private:
 
     static glm::vec3 getCoordsClicked(const glm::vec3 &playerPosition, const DirectionType &playerDirectionType);
 
-    bool inventoryIsClicked(const glm::vec2 &mousePosition);
+    bool inventoryIsClicked(const glm::vec2 &mousePosition, FreeflyCamera &camera);
 
 public:
     explicit CharacterManager(const glm::vec3 &playerPosition, const DirectionType &playerDirectionType,
-                              unsigned int windowWidth, unsigned int windowHeight);
+                              unsigned int windowWidth, unsigned int windowHeight,
+                              std::vector<std::unique_ptr<InteractableObject>> &interableObjects,
+                              std::vector<std::unique_ptr<Monster>> &monsters);
 
     ~CharacterManager() = default;
 
     Player &getPlayer() { return _player; }
 
-    void addMonster(std::unique_ptr<Monster> monster);
-
-    void addInteractableObject(std::unique_ptr<InteractableObject> interactableObject);
-
     std::vector<std::unique_ptr<Monster>> &getMonsters() { return _monsters; }
 
     std::vector<std::unique_ptr<InteractableObject>> &getInteractableObjects() { return _interactableObjects; }
 
-    bool leftClick(const glm::vec3 &playerPosition, const DirectionType &playerDirectionType,
-                   const glm::vec2 &mousePosition);
+    void leftClick(const DirectionType &playerDirectionType, const glm::vec2 &mousePosition, FreeflyCamera &camera);
 
     bool updateMonsters(const std::vector<std::vector<MapElement>> &map);
 };

@@ -1,13 +1,19 @@
 #include "../include/Monster.hpp"
 #include "../include/Utils.hpp"
+#include <memory>
 
 Monster::Monster(MonsterType type, const glm::vec3 &position, const DirectionType &directionType)
         : _type(type)
         , _modelType(getModelTypeFromMonsterType(type))
-        , Character(getHealthFromMonsterType(type), getAttackFromMonsterType(type), getMoneyFromMonsterType(type),
-                    position, directionType)
-{
-}
+        , Character(getHealthFromMonsterType(type), getAttackFromMonsterType(type), getDefenseFromMonsterType(type),
+                    getMoneyFromMonsterType(type), position, directionType) {}
+
+Monster::Monster(MonsterType type, const glm::vec3 &position, const DirectionType &directionType, int health,
+                 unsigned int attack, int defense, int money)
+        : _type(type)
+        , _modelType(getModelTypeFromMonsterType(type))
+        , Character(health, attack, defense, money, position, directionType) {}
+
 
 ModelType Monster::getModelTypeFromMonsterType(MonsterType monsterType)
 {
@@ -45,6 +51,18 @@ unsigned int Monster::getAttackFromMonsterType(MonsterType type)
     }
 }
 
+unsigned int Monster::getDefenseFromMonsterType(MonsterType type)
+{
+    switch (type)
+    {
+        case ARMOGOHMA:return DEFENSE_ARMOGOHMA;
+        case KING_BOO:return DEFENSE_KING_BOO;
+        case DARKRAI:return DEFENSE_DARKRAI;
+
+        default: return 0;
+    }
+}
+
 unsigned int Monster::getMoneyFromMonsterType(MonsterType type)
 {
     switch (type)
@@ -54,6 +72,26 @@ unsigned int Monster::getMoneyFromMonsterType(MonsterType type)
         case DARKRAI:return MONEY_DARKRAI;
 
         default: return 0;
+    }
+}
+
+MonsterType Monster::getMonsterTypeFromName(const std::string &name)
+{
+    if (name == "DARKRAI")
+    {
+        return DARKRAI;
+    }
+    else if (name == "KINGBOO")
+    {
+        return KING_BOO;
+    }
+    else if (name == "ARMOGOHMA")
+    {
+        return ARMOGOHMA;
+    }
+    else
+    {
+        return UNKNOWN_MONSTER;
     }
 }
 
@@ -269,4 +307,53 @@ bool Monster::isPathWalkableHorizontally(const glm::vec3 &playerPosition, const 
 
     return true;
 }
+
+void Monster::createMonster(const std::string &string, std::vector<std::unique_ptr<Monster>> &monsters)
+{
+    std::vector<std::string> splitString = Utils::splitStringByDelimiter(string, ":");
+
+    if (splitString.size() != 4 && splitString.size() != 8)
+    {
+        std::cerr << "Error while reading the dungeon file: wrong number of arguments for monster" << std::endl;
+    }
+
+    int         pos_i       = std::stoi(splitString[1]);
+    int         pos_j       = std::stoi(splitString[2]);
+    MonsterType monsterType = Monster::getMonsterTypeFromName(splitString[3]);
+
+    if (monsterType == UNKNOWN_MONSTER)
+    {
+        std::cerr << "Error while reading the dungeon file: unknown monster type" << std::endl;
+    }
+
+    else
+    {
+        if (splitString.size() == 4)
+        {
+            monsters.emplace_back(
+                    Utils::make_unique<Monster>(
+                            monsterType,
+                            glm::vec3(pos_j, 0, -pos_i),
+                            DirectionType::SOUTH));
+        }
+
+        else
+        {
+            int          hp      = std::stoi(splitString[4]);
+            unsigned int attack  = std::stoi(splitString[5]);
+            int          defense = std::stoi(splitString[6]);
+            int          speed   = std::stoi(splitString[7]);
+            monsters.emplace_back(
+                    Utils::make_unique<Monster>(
+                            monsterType,
+                            glm::vec3(pos_j, 0, -pos_i),
+                            DirectionType::SOUTH,
+                            hp,
+                            attack,
+                            defense,
+                            speed));
+        }
+    }
+}
+
 

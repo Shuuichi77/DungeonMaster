@@ -17,9 +17,8 @@ DrawingProgram::DrawingProgram(const FilePath &applicationPath, const std::strin
         , _windowHeight(windowHeight)
         , _textureManager(textureManager)
         , _modelManager(applicationPath, camera, monsters, interactableObjects)
-        , _textManager(windowWidth, windowHeight, applicationPath, "botw_font.ttf", player)
         , _windowManager(windowManager)
-        , _interface(player, windowWidth, windowHeight, _modelManager, _textureManager, _textManager, _program, camera,
+        , _interface(player, windowWidth, windowHeight, _modelManager, _textureManager, _program, camera,
                      _projMatrix, _uMVPMatrix, _uMVMatrix, _uNormalMatrix, _uTexture, _vao)
 {
     _projMatrix        = perspective(radians(70.f), (float) (windowWidth / windowHeight), 0.1f, 100.f);
@@ -37,9 +36,6 @@ void DrawingProgram::use()
 
 void DrawingProgram::loadVaoVboForQuads()
 {
-    /*********************************
-     * HERE SHOULD COME THE INITIALIZATION CODE
-     *********************************/
     GLuint vbo;
     glGenBuffers(1, &vbo);
     glBindBuffer(GL_ARRAY_BUFFER, vbo);
@@ -444,19 +440,6 @@ void DrawingProgram::changeAttributes()
     }
 }
 
-void DrawingProgram::drawMap(const std::vector<std::vector<MapElement>> &map, int width, int height)
-{
-
-    _program.use();
-    _interface.drawInterface();
-    _modelManager.drawAllModels(_program, _projMatrix, _uMVPMatrix, _uMVMatrix, _uNormalMatrix);
-
-    drawQuads(map, width, height);
-    drawModelDebug();
-
-    _textManager.draw();
-}
-
 void DrawingProgram::drawModelDebug()
 {
     changeAttributes();
@@ -489,24 +472,32 @@ void DrawingProgram::drawModelDebug()
     MVMMatrix = rotate(MVMMatrix, radians(_ry), vec3(0, 1, 0));
     MVMMatrix = rotate(MVMMatrix, radians(_rz), vec3(0, 0, 1));
 
-    vec3 scaleVec = vec3(1. / _scaled) * ModelTransformations::getGlobalScale();
-    MVMMatrix = scale(MVMMatrix, scaleVec);
+//    vec3 scaleVec = vec3(1. / _scaled) * ModelTransformations::getGlobalScale();
+//    MVMMatrix = scale(MVMMatrix, scaleVec);
+
+    MVMMatrix = scale(MVMMatrix, vec3(1. * _scaled));
     DrawUtils::setUniformMatrix(MVMMatrix, _camera.getViewMatrix(), _projMatrix, _uMVPMatrix, _uMVMatrix,
                                 _uNormalMatrix);
 
-//    glBindTexture(GL_TEXTURE_2D, _textureManager.getTexture(TextureManager::EXIT_TEXTURE));
-//    glBindVertexArray(_vao);
-//    glDrawArrays(GL_TRIANGLES, 0, 6);
-//    glBindVertexArray(0);
+    glBindTexture(GL_TEXTURE_2D, _textureManager.getTexture(TextureManager::MENU_WIN_TEXTURE));
+    glBindVertexArray(_vao);
+    glDrawArrays(GL_TRIANGLES, 0, 6);
+    glBindVertexArray(0);
 
 //    _modelManager.drawModelDebug(KEY_MODEL, _camera.getPosition(), _program,
 //                                 _camera.getViewMatrix(), _projMatrix, _uMVPMatrix, _uMVMatrix, _uNormalMatrix,
 //                                 MVMMatrix);
 
+}
 
-    // ------------ Reference ------------
-//    drawFixModel(ModelType::SWORD_01_IN_INVENTORY_MODEL);
-
+void DrawingProgram::drawMap(const std::vector<std::vector<MapElement>> &map, int width, int height)
+{
+    _program.use();
+    glUniform3fv(_uLightPosition_vs, 1, value_ptr(_camera.getViewMatrix() * vec4(_camera.getPosition(), 1)));
+    _interface.drawInterface();
+    _modelManager.drawAllModels(_program, _projMatrix, _uMVPMatrix, _uMVMatrix, _uNormalMatrix);
+    drawQuads(map, width, height);
+    drawModelDebug();
 }
 
 void DrawingProgram::drawQuads(const std::vector<std::vector<MapElement>> &map, int width, int height)
@@ -553,7 +544,6 @@ void DrawingProgram::drawWallAroundMapBorder(float x, float y, float z, int widt
         drawWall(x, y, z - 1, DirectionType::NORTH, numWall);
     }
 
-
     if ((((int) z) + 1) == height)
     {
         drawWall(x, y, z + 1, DirectionType::SOUTH, numWall);
@@ -586,6 +576,7 @@ void DrawingProgram::drawLadder(float x, float y, float z)
 void DrawingProgram::drawWalls(int i, int j, int width, int height, const std::vector<std::vector<MapElement>> &map,
                                int &numWall)
 {
+    // Check North
     if (i + 1 < height && map[i + 1][j] != MapElement::WALL)
     {
         drawWall((float) j, 0, (float) i, DirectionType::NORTH, numWall++);
@@ -610,7 +601,6 @@ void DrawingProgram::drawWalls(int i, int j, int width, int height, const std::v
 
 void DrawingProgram::drawWall(float x, float y, float z, DirectionType wallOrientation, int numWall)
 {
-    glUniform3fv(_uLightPosition_vs, 1, value_ptr(_camera.getViewMatrix() * vec4(_camera.getPosition(), 1)));
     glUniform1i(glGetUniformLocation(_program.getGLId(), "uIsAModel"), false);
 
     glBindTexture(GL_TEXTURE_2D, _textureManager.getWallTexture(numWall));
@@ -648,7 +638,7 @@ void DrawingProgram::drawWall(float x, float y, float z, DirectionType wallOrien
 
 void DrawingProgram::drawFloorAndCeiling(float x, float y, float z, const std::string &floorTextureName)
 {
-    glUniform3fv(_uLightPosition_vs, 1, value_ptr(_camera.getViewMatrix() * vec4(_camera.getPosition(), 1)));
+
     glUniform1i(glGetUniformLocation(_program.getGLId(), "uIsAModel"), false);
 
     // Floor
@@ -676,9 +666,61 @@ void DrawingProgram::drawFloorAndCeiling(float x, float y, float z, const std::s
     glBindVertexArray(0);
 }
 
-void DrawingProgram::updatePlayer(Player &player)
+void DrawingProgram::drawMenuStarting()
 {
-    _textManager.updatePlayerTexts(player);
+    glUniform1i(glGetUniformLocation(_program.getGLId(), "uIsAModel"), false);
+    glBindTexture(GL_TEXTURE_2D, _textureManager.getTexture(TextureManager::MENU_START_TEXTURE));
+    glUniform1i(_uTexture, 0);
+
+    ModelTransformation modelTransformation = _modelManager.getModelTransformations().getModelTransformation(
+            MENU_MODEL);
+
+    mat4 MVMMatrix = _modelManager.applyModelTransformation(modelTransformation, _camera.getPosition());
+    DrawUtils::setUniformMatrix(MVMMatrix, _camera.getViewMatrix(), _projMatrix, _uMVPMatrix, _uMVMatrix,
+                                _uNormalMatrix);
+
+    glBindVertexArray(_vao);
+    glDrawArrays(GL_TRIANGLES, 0, 6);
+    glBindVertexArray(0);
 }
+
+void DrawingProgram::drawMenuWin()
+{
+    glUniform1i(glGetUniformLocation(_program.getGLId(), "uIsAModel"), false);
+    glBindTexture(GL_TEXTURE_2D, _textureManager.getTexture(TextureManager::MENU_WIN_TEXTURE));
+    glUniform1i(_uTexture, 0);
+
+    ModelTransformation modelTransformation = _modelManager.getModelTransformations().getModelTransformation(
+            MENU_MODEL);
+
+    mat4 MVMMatrix = _modelManager.applyModelTransformation(modelTransformation, _camera.getPosition());
+    DrawUtils::setUniformMatrix(MVMMatrix, _camera.getViewMatrix(), _projMatrix, _uMVPMatrix, _uMVMatrix,
+                                _uNormalMatrix);
+
+    glBindVertexArray(_vao);
+    glDrawArrays(GL_TRIANGLES, 0, 6);
+    glBindVertexArray(0);
+}
+
+void DrawingProgram::drawMenuLose()
+{
+    glUniform1i(glGetUniformLocation(_program.getGLId(), "uIsAModel"), false);
+
+    glBindTexture(GL_TEXTURE_2D, _textureManager.getTexture(TextureManager::MENU_LOSE_TEXTURE));
+    glUniform1i(_uTexture, 0);
+
+    ModelTransformation modelTransformation = _modelManager.getModelTransformations().getModelTransformation(
+            MENU_MODEL);
+    
+    mat4 MVMMatrix = _modelManager.applyModelTransformation(modelTransformation, _camera.getPosition());
+    DrawUtils::setUniformMatrix(MVMMatrix, _camera.getViewMatrix(), _projMatrix, _uMVPMatrix, _uMVMatrix,
+                                _uNormalMatrix);
+
+    glBindVertexArray(_vao);
+    glDrawArrays(GL_TRIANGLES, 0, 6);
+    glBindVertexArray(0);
+}
+
+
 
 

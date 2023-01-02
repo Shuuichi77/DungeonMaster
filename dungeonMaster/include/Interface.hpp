@@ -6,8 +6,6 @@
 
 class TextureManager;
 
-class TextManager;
-
 class Interface
 {
 private:
@@ -15,7 +13,6 @@ private:
     const unsigned int   _windowHeight;
     ModelManager         &_modelManager;
     const TextureManager &_textureManager;
-    TextManager          &_textManager;
 
     Program       &_program;
     Player        &_player;
@@ -29,7 +26,7 @@ private:
 
 public:
     Interface(Player &player, unsigned int windowWidth, unsigned int windowHeight, ModelManager &modelManager,
-              const TextureManager &textureManager, TextManager &textManager, Program &program,
+              const TextureManager &textureManager, Program &program,
               FreeflyCamera &camera, mat4 &projMatrix, GLint &uMVPMatrix, GLint &uMVMatrix, GLint &uNormalMatrix,
               GLint &uTexture, GLuint &vao);
 

@@ -62,6 +62,8 @@ private:
 
     void addInventoryModelTransformation();
 
+    void addMenuModelTransformation();
+
     void addHealthPotionModelTransformation();
 
     void addMilkModelTransformation();

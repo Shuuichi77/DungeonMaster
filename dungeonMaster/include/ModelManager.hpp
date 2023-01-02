@@ -31,7 +31,8 @@ private:
     static mat4 transformMobileModel(mat4 &MVMMatrix, const vec3 &position,
                                      const ModelTransformation &modelTransformation);
 
-    mat4 transformFixModel(mat4 &MVMMatrix, const ModelTransformation &modelTransformation);
+    static mat4
+    transformFixModel(const FreeflyCamera &camera, mat4 &MVMMatrix, const ModelTransformation &modelTransformation);
 
     mat4 applyModelTransformation(const ModelTransformation &modelTransformation, const vec3 &position);
 
@@ -60,12 +61,15 @@ private:
 
     friend class Interface;
 
+    friend class DrawingProgram;
+
 public:
     explicit ModelManager(const glimac::FilePath &applicationPath, const FreeflyCamera &camera,
                           std::vector<std::unique_ptr<Monster>> &monstersToDraw,
                           std::vector<std::unique_ptr<InteractableObject>> &interactableObjectsToDraw);
 
     ~ModelManager() = default;
+
 
     void drawAllModels(const glimac::Program &program, const mat4 &projMatrix, GLint uMVPMatrix, GLint uMVMatrix,
                        GLint uNormalMatrix);
@@ -79,4 +83,5 @@ public:
     void drawModelDebug(const ModelType &modelType, const vec3 &position, const glimac::Program &program,
                         const mat4 &projMatrix, GLint uMVPMatrix, GLint uMVMatrix,
                         GLint uNormalMatrix, const mat4 &MVMMatrix);
+
 };

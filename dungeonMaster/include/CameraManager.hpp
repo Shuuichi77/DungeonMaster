@@ -15,7 +15,6 @@ class CameraManager
 private:
     FreeflyCamera            &_camera;
     glimac::SDLWindowManager &_windowManager;
-    bool                     &_gameWin;
 
     bool isOutOfMap(int i, int j, const std::vector<std::vector<MapElement>> &map);
 
@@ -26,8 +25,7 @@ private:
 
 
 public:
-    CameraManager(FreeflyCamera &camera, glimac::SDLWindowManager &windowManager,
-                  bool &gameWin);
+    CameraManager(FreeflyCamera &camera, glimac::SDLWindowManager &windowManager);
 
     void moveCamera(const SDL_MouseButtonEvent &button,
                     const std::vector<std::vector<MapElement>> &map,

@@ -1,4 +1,5 @@
 #include "../include/InteractableObject.hpp"
+#include "../include/Utils.hpp"
 
 
 InteractableObject::InteractableObject(InteractableObjectType type, const glm::vec3 &position,
@@ -29,6 +30,32 @@ ModelType InteractableObject::getModelTypeFromInteractableObjectType(Interactabl
     }
 }
 
+bool InteractableObject::addObjectsToPlayer(Player &player, const InteractableObjectType &interactableObjectType) const
+{
+    for (int i = 0; i < _qty; ++i)
+    {
+        switch (interactableObjectType)
+        {
+            case INTERACTABLE_CHEST_KEY:player.addKey();
+                break;
+
+            case INTERACTABLE_CHEST_MILK:player.addItem(MILK);
+                break;
+
+            case INTERACTABLE_CHEST_HEALTH_POTION:player.addItem(HEALTH_POTION);
+                break;
+
+            case INTERACTABLE_CHEST_FAIRY:player.addItem(FAIRY);
+                break;
+
+            default:std::cerr << "Unknown type or type can't be added multiple times" << std::endl;
+                return false;
+        }
+    }
+
+    return true;
+}
+
 bool InteractableObject::interactWithPlayer(Player &player)
 {
     switch (_type)
@@ -40,21 +67,11 @@ bool InteractableObject::interactWithPlayer(Player &player)
             player.addMoney(_qty);
             return true;
 
-        case INTERACTABLE_CHEST_KEY: //
-            player.addKey();
-            return true;
-
-        case INTERACTABLE_CHEST_MILK: //
-            player.addItem(MILK);
-            return true;
-
-        case INTERACTABLE_CHEST_HEALTH_POTION: //
-            player.addItem(HEALTH_POTION);
-            return true;
-
         case INTERACTABLE_CHEST_FAIRY: //
-            player.addItem(FAIRY);
-            return true;
+        case INTERACTABLE_CHEST_HEALTH_POTION: //
+        case INTERACTABLE_CHEST_MILK: //
+        case INTERACTABLE_CHEST_KEY: //
+            return addObjectsToPlayer(player, _type);
 
         case INTERACTABLE_CHEST_WEAPON_01: //
             player.addWeapon(WOODEN_SWORD);
@@ -70,6 +87,81 @@ bool InteractableObject::interactWithPlayer(Player &player)
     }
 
     return false;
+}
+
+InteractableObjectType InteractableObject::getInteractableObjectTypeFromName(const std::string &name)
+{
+    if (name == "MONEY")
+    {
+        return INTERACTABLE_CHEST_MONEY;
+    }
+    else if (name == "KEY")
+    {
+        return INTERACTABLE_CHEST_KEY;
+    }
+    else if (name == "MILK")
+    {
+        return INTERACTABLE_CHEST_MILK;
+    }
+    else if (name == "POTION")
+    {
+        return INTERACTABLE_CHEST_HEALTH_POTION;
+    }
+    else if (name == "FAIRY")
+    {
+        return INTERACTABLE_CHEST_FAIRY;
+    }
+    else if (name == "WOODENSWORD")
+    {
+        return INTERACTABLE_CHEST_WEAPON_01;
+    }
+    else if (name == "ROYALSWORD")
+    {
+        return INTERACTABLE_CHEST_WEAPON_02;
+    }
+    else if (name == "MASTERSWORD")
+    {
+        return INTERACTABLE_CHEST_WEAPON_03;
+    }
+    else
+    {
+        return UNKNOWN_INTERACTABLE_OBJECT_TYPE;
+    }
+}
+
+void InteractableObject::createInteractableObject(const std::string &string,
+                                                  std::vector<std::unique_ptr<InteractableObject>> &interactableObjects)
+{
+    std::vector<std::string> splitString = Utils::splitStringByDelimiter(string, ":");
+    if (splitString.size() != 4 && splitString.size() != 5)
+    {
+        std::cerr << "Error while reading the dungeon file: wrong number of arguments for chest" << std::endl;
+        return;
+    }
+
+    int                    pos_i     = std::stoi(splitString[1]);
+    int                    pos_j     = std::stoi(splitString[2]);
+    InteractableObjectType chestType = InteractableObject::getInteractableObjectTypeFromName(splitString[3]);
+    unsigned int           qty       = 1;
+    if (splitString.size() == 5)
+    {
+        qty = std::stoi(splitString[4]);
+    }
+
+    if (chestType == UNKNOWN_INTERACTABLE_OBJECT_TYPE)
+    {
+        std::cerr << "Error while reading the dungeon file: unknown chest type" << std::endl;
+    }
+
+    else
+    {
+        interactableObjects.emplace_back(
+                Utils::make_unique<InteractableObject>(
+                        chestType,
+                        glm::vec3(pos_j, 0, -pos_i),
+                        DirectionType::SOUTH,
+                        qty));
+    }
 }
 
 
