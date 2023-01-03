@@ -1,12 +1,14 @@
 #include "../include/TextManager.hpp"
 
-TextManager::TextManager(unsigned int windowWidth, unsigned int windowHeight,
-                         const glimac::FilePath &applicationPath)
+TextManager::TextManager(unsigned int windowWidth, unsigned int windowHeight, const glimac::FilePath &applicationPath,
+                         unsigned int nbMoneyNeededToFinishGame, unsigned int nbMonsterKillNeededToFinishGame)
         : _windowWidth(windowWidth)
         , _windowHeight(windowHeight)
         , _program(loadProgram(applicationPath.dirPath() + "/shaders/tex2D.vs.glsl",
                                applicationPath.dirPath() + "/shaders/tex2D.fs.glsl"))
         , _textFactory(_vao, _uModelMatrix, _uTexture, _program, applicationPath, windowWidth, windowHeight)
+        , _nbMoneyNeededToFinishGame(nbMoneyNeededToFinishGame)
+        , _nbMonsterKillNeededToFinishGame(nbMonsterKillNeededToFinishGame)
 {
     _uModelMatrix = glGetUniformLocation(_program.getGLId(), "uModelMatrix");
     _uTexture     = glGetUniformLocation(_program.getGLId(), "uTexture");
@@ -69,16 +71,30 @@ void TextManager::loadVAO()
 void TextManager::initMessages()
 {
     _texts.emplace(TextType::MONEY_QTY_MESSAGE,
-                   _textFactory.createText(TextType::MONEY_QTY_MESSAGE, std::to_string(0)));
-    
+                   _textFactory.createText(TextType::MONEY_QTY_MESSAGE, getMoneyMessage(0)));
+    _texts.emplace(TextType::MONSTERS_KILLED_QTY_MESSAGE,
+                   _textFactory.createText(TextType::MONSTERS_KILLED_QTY_MESSAGE, getMonstersKilledMessage(0)));
+}
+
+std::string TextManager::getMoneyMessage(unsigned int nbMoney) const
+{
+    return std::to_string(nbMoney) + " / " + std::to_string(_nbMoneyNeededToFinishGame);
+}
+
+std::string TextManager::getMonstersKilledMessage(unsigned int nbMonster) const
+{
+    return std::to_string(nbMonster) + " / " + std::to_string(_nbMonsterKillNeededToFinishGame);
 }
 
 void TextManager::drawMenuInGame(const Player &player)
 {
     try
     {
-        _texts.at(TextType::MONEY_QTY_MESSAGE).update(std::to_string(player.getMoney()));
+        _texts.at(TextType::MONEY_QTY_MESSAGE).update(getMoneyMessage(player.getMoney()));
         _texts.at(TextType::MONEY_QTY_MESSAGE).draw();
+
+        _texts.at(TextType::MONSTERS_KILLED_QTY_MESSAGE).update(getMonstersKilledMessage(player.getNbMonstersKilled()));
+        _texts.at(TextType::MONSTERS_KILLED_QTY_MESSAGE).draw();
     } catch (std::out_of_range &e)
     {
         std::cerr << "TextType " << TextType::MONEY_QTY_MESSAGE << " not found" << std::endl;

@@ -14,6 +14,9 @@ ModelManager::ModelManager(const glimac::FilePath &applicationPath, const Freefl
     loadModelFromFile(_directory + "/Armogohma/Armogohma.dae", MONSTER_01_MODEL);
     loadModelFromFile(_directory + "/KingBoo/KingBoo.dae", MONSTER_02_MODEL);
     loadModelFromFile(_directory + "/Darkrai/Darkrai.obj", MONSTER_03_MODEL);
+    loadModelFromFile(_directory + "/Darknut/Darknut.obj", MONSTER_04_MODEL);
+    loadModelFromFile(_directory + "/Hydreigon/Hydreigon.dae", MONSTER_05_MODEL);
+    loadModelFromFile(_directory + "/ShadowBeast/ShadowBeast.obj", MONSTER_06_MODEL);
     loadModelFromFile(_directory + "/MonstersAttack/MonstersAttack.fbx", MONSTERS_ATTACK_MODEL);
     loadModelFromFile(_directory + "/Sword01/Sword01.dae", WOODEN_SWORD_MODEL);
     loadModelFromFile(_directory + "/Sword02/Sword02.dae", ROYAL_SWORD_MODEL);
@@ -22,6 +25,7 @@ ModelManager::ModelManager(const glimac::FilePath &applicationPath, const Freefl
     loadModelFromFile(_directory + "/Stairs/Stairs.obj", LADDER_MODEL);
     loadModelFromFile(_directory + "/Chest/Chest.obj", CHEST_MODEL);
     loadModelFromFile(_directory + "/Money/Money.dae", MONEY_MODEL);
+    loadModelFromFile(_directory + "/Skull/Skull.obj", SKULL_MODEL);
     loadModelFromFile(_directory + "/Door/Door.obj", DOOR_MODEL);
     loadModelFromFile(_directory + "/Milk/Milk.obj", MILK_MODEL);
     loadModelFromFile(_directory + "/HealthPotion/HealthPotion.obj", HEALTH_POTION_MODEL);

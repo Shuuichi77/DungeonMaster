@@ -46,4 +46,6 @@ public:
 
     static void createInteractableObject(const std::string &string,
                                          std::vector<std::unique_ptr<InteractableObject>> &interactableObjects);
+
+
 };

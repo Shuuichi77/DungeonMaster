@@ -18,9 +18,13 @@ ModelTransformations::ModelTransformations()
     addMonster1ModelTransformation();
     addMonster2ModelTransformation();
     addMonster3AModelTransformation();
+    addMonster4AModelTransformation();
+    addMonster5AModelTransformation();
+    addMonster6AModelTransformation();
     addExitModelTransformation();
     addChestModelTransformation();
     addMoneyModelTransformation();
+    addSkullModelTransformation();
     addDoorModelTransformation();
     addInventoryModelTransformation();
     addMenuModelTransformation();
@@ -265,9 +269,9 @@ void ModelTransformations::addKeyModelTransformation()
 {
     ModelTransformation modelTransformation;
 
-    modelTransformation.translation = glm::vec3(-0.1925f, 0.405f, -0.30f) - getGlobalTranslate();
+    modelTransformation.translation = glm::vec3(-0.1925f, 0.387f, -0.30f) - getGlobalTranslate();
     modelTransformation.rotation    = glm::vec3(-90, 0, 0);
-    modelTransformation.scale       = glm::vec3(1. / 58) * getGlobalScale();
+    modelTransformation.scale       = glm::vec3(1. / 52) * getGlobalScale();
     modelTransformation.isFix       = true;
 
     addModelTransformation(KEY_MODEL, modelTransformation);
@@ -307,6 +311,41 @@ void ModelTransformations::addMonster3AModelTransformation()
     modelTransformation.rotation    = glm::vec3(0.f, 30.f, 0.f);
     modelTransformation.scale       = glm::vec3(1. / 15.f) * getGlobalScale();
     addModelTransformation(MONSTER_03_MODEL, modelTransformation);
+}
+
+
+// DARKNUT
+void ModelTransformations::addMonster4AModelTransformation()
+{
+    ModelTransformation modelTransformation;
+
+    modelTransformation.translation = -getGlobalTranslate();
+    modelTransformation.rotation    = glm::vec3(0.f, 0.f, 0.f);
+    modelTransformation.scale       = glm::vec3(1. / 3.f) * getGlobalScale();
+    addModelTransformation(MONSTER_04_MODEL, modelTransformation);
+}
+
+// HYDREIGON
+void ModelTransformations::addMonster5AModelTransformation()
+{
+    ModelTransformation modelTransformation;
+
+    modelTransformation.translation = glm::vec3(0, 0.04, 0) - getGlobalTranslate();
+    modelTransformation.rotation    = glm::vec3(-90, 0, 0);
+    modelTransformation.scale       = glm::vec3(1. / 261.f) * getGlobalScale();
+    modelTransformation.isVertical  = true;
+    addModelTransformation(MONSTER_05_MODEL, modelTransformation);
+}
+
+// SHADOWBEAST
+void ModelTransformations::addMonster6AModelTransformation()
+{
+    ModelTransformation modelTransformation;
+
+    modelTransformation.translation = -getGlobalTranslate();
+    modelTransformation.rotation    = glm::vec3(0, 0, 0);
+    modelTransformation.scale       = glm::vec3(1. / 20.f) * getGlobalScale();
+    addModelTransformation(MONSTER_06_MODEL, modelTransformation);
 }
 
 
@@ -353,6 +392,18 @@ void ModelTransformations::addMoneyModelTransformation()
     modelTransformation.isFix       = true;
 
     addModelTransformation(MONEY_MODEL, modelTransformation);
+}
+
+void ModelTransformations::addSkullModelTransformation()
+{
+    ModelTransformation modelTransformation;
+
+    modelTransformation.translation = glm::vec3(-0.28, 0.472, -0.44) - getGlobalTranslate();
+    modelTransformation.rotation    = glm::vec3(20, 28, 0);
+    modelTransformation.scale       = glm::vec3(1. / 17.) * getGlobalScale();
+    modelTransformation.isFix       = true;
+
+    addModelTransformation(SKULL_MODEL, modelTransformation);
 }
 
 void ModelTransformations::addDoorModelTransformation()

@@ -19,6 +19,7 @@ private:
     static constexpr const char *WALL_TEXTURE_2     = "wall_2";
     static constexpr const char *WALL_TEXTURE_3     = "wall_3";
     static constexpr const char *FLOOR_TEXTURE      = "floor";
+    static constexpr const char *ENTRY_TEXTURE      = "entry";
     static constexpr const char *EXIT_TEXTURE       = "exit";
     static constexpr const char *INVENTORY_TEXTURE  = "inventory";
     static constexpr const char *WATER_TEXTURE      = "water";

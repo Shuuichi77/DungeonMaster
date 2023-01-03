@@ -4,6 +4,7 @@
 #include <glm/glm.hpp>
 #include <memory>
 #include <vector>
+#include <iostream>
 
 class Utils
 {
@@ -56,6 +57,31 @@ public:
     static std::unique_ptr<T> make_unique(Args &&... args)
     {
         return std::unique_ptr<T>(new T(std::forward<Args>(args)...));
+    }
+
+    static DirectionType getDirectionTypeFromString(const std::string &directionType)
+    {
+        if (directionType == "NORTH")
+        {
+            return NORTH;
+        }
+        else if (directionType == "SOUTH")
+        {
+            return SOUTH;
+        }
+        else if (directionType == "EAST")
+        {
+            return EAST;
+        }
+        else if (directionType == "WEST")
+        {
+            return WEST;
+        }
+        else
+        {
+            std::cerr << "Unknown direction type" << std::endl;
+            exit(EXIT_FAILURE);
+        }
     }
 
     static glm::vec3

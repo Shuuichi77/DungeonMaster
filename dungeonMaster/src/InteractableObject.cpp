@@ -133,24 +133,27 @@ void InteractableObject::createInteractableObject(const std::string &string,
                                                   std::vector<std::unique_ptr<InteractableObject>> &interactableObjects)
 {
     std::vector<std::string> splitString = Utils::splitStringByDelimiter(string, ":");
-    if (splitString.size() != 4 && splitString.size() != 5)
+    if (splitString.size() != 5 && splitString.size() != 6)
     {
-        std::cerr << "Error while reading the dungeon file: wrong number of arguments for chest" << std::endl;
-        return;
+        std::cerr << "Error while reading the dungeon file: wrong number of arguments for chest: " << string
+                << std::endl;
+        exit(EXIT_FAILURE);
     }
 
-    int                    pos_i     = std::stoi(splitString[1]);
-    int                    pos_j     = std::stoi(splitString[2]);
-    InteractableObjectType chestType = InteractableObject::getInteractableObjectTypeFromName(splitString[3]);
-    unsigned int           qty       = 1;
-    if (splitString.size() == 5)
+    int                    pos_i         = std::stoi(splitString[1]);
+    int                    pos_j         = std::stoi(splitString[2]);
+    InteractableObjectType chestType     = InteractableObject::getInteractableObjectTypeFromName(splitString[3]);
+    DirectionType          directionType = Utils::getDirectionTypeFromString(splitString[4]);
+    unsigned int           qty           = 1;
+    if (splitString.size() == 6)
     {
-        qty = std::stoi(splitString[4]);
+        qty = std::stoi(splitString[5]);
     }
 
     if (chestType == UNKNOWN_INTERACTABLE_OBJECT_TYPE)
     {
         std::cerr << "Error while reading the dungeon file: unknown chest type" << std::endl;
+        exit(EXIT_FAILURE);
     }
 
     else
@@ -159,7 +162,7 @@ void InteractableObject::createInteractableObject(const std::string &string,
                 Utils::make_unique<InteractableObject>(
                         chestType,
                         glm::vec3(pos_j, 0, -pos_i),
-                        DirectionType::SOUTH,
+                        directionType,
                         qty));
     }
 }

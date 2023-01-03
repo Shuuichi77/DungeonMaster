@@ -4,7 +4,8 @@
 
 enum TextType
 {
-    MONEY_QTY_MESSAGE
+    MONEY_QTY_MESSAGE,
+    MONSTERS_KILLED_QTY_MESSAGE
 };
 
 class TextFactory
@@ -21,6 +22,8 @@ private:
     const unsigned int     windowHeight;
 
     Text createMoneyQtyText(const std::string &text);
+
+    Text createMonsterKilledQty(const std::string &text);
 
 public:
     TextFactory(GLuint &vao, GLint &uModelMatrix, GLint &uTexture, Program &program,

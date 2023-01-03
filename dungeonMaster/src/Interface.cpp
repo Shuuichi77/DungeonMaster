@@ -27,7 +27,7 @@ void Interface::drawInterface()
 
     _modelManager.drawMultipleFixModels(KEY_MODEL, _camera.getPosition(), _program,
                                         _projMatrix, _uMVPMatrix, _uMVMatrix, _uNormalMatrix,
-                                        (float) (_windowWidth * 0.000007), _player.getNbKeys());
+                                        (float) (_windowWidth * 0.000008), _player.getNbKeys());
 
     // Models Inventory from here
     drawInventoryBackground();
@@ -43,6 +43,9 @@ void Interface::drawInterface()
     }
 
     _modelManager.drawModel(MONEY_MODEL, _camera.getPosition(), DirectionType::NEUTRAL, _program, _projMatrix,
+                            _uMVPMatrix, _uMVMatrix, _uNormalMatrix);
+
+    _modelManager.drawModel(SKULL_MODEL, _camera.getPosition(), DirectionType::NEUTRAL, _program, _projMatrix,
                             _uMVPMatrix, _uMVMatrix, _uNormalMatrix);
 
     _modelManager.drawInventory(_player.getItems(), _player.getWeaponsTypes(), _program, _projMatrix, _uMVPMatrix,

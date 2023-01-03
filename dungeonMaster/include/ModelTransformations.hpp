@@ -60,6 +60,12 @@ private:
 
     void addMonster3AModelTransformation();
 
+    void addMonster4AModelTransformation();
+
+    void addMonster5AModelTransformation();
+
+    void addMonster6AModelTransformation();
+
     void addMonstersAttackModelTransformation();
 
     void addExitModelTransformation();
@@ -67,6 +73,8 @@ private:
     void addChestModelTransformation();
 
     void addMoneyModelTransformation();
+
+    void addSkullModelTransformation();
 
     void addDoorModelTransformation();
 

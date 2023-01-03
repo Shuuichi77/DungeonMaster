@@ -50,8 +50,6 @@ private:
 
     void drawModel(const ModelType &modelType, const vec3 &position, const DirectionType &directionType);
 
-    void drawFixModel(const ModelType &modelType);
-
     void drawQuads(const std::vector<std::vector<MapElement>> &map, int width, int height);
 
     void drawWalls(int i, int j, int width, int height, const std::vector<std::vector<MapElement>> &map,
@@ -63,16 +61,16 @@ private:
 
     void drawWallAroundMapBorder(float x, float y, float z, int width, int height, int numWall);
 
-    void drawLadder(float x, float y, float z);
+    void drawLadder(float x, float y, float z, const MapElement &mapElement);
 
     void programUse() { _program.use(); }
 
     friend class Menu;
 
     // ------------------------------ Debug ------------------------------
-    float _x = 4.f;
+    float _x = 5.f;
     float _y = 0.f;
-    float _z = 4.f;
+    float _z = 6.f;
 
     float _pas_transi = 1.f;
     float _tx         = 0.f;

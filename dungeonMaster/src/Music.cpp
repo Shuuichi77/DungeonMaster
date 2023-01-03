@@ -215,6 +215,6 @@ void Music::playBottle()
 
 void Music::changeWeapon()
 {
-    Mix_Volume(8, _volumeSound * 2);
+    Mix_Volume(8, _volumeSound * 4);
     Mix_PlayChannel(8, _sounds.at(SOUND_CHANGE_WEAPON), 0);
 }

@@ -22,8 +22,12 @@ ModelType Monster::getModelTypeFromMonsterType(MonsterType monsterType)
         case ARMOGOHMA:return MONSTER_01_MODEL;
         case KING_BOO:return MONSTER_02_MODEL;
         case DARKRAI:return MONSTER_03_MODEL;
+        case DARKNUT:return MONSTER_04_MODEL;
+        case HYDREIGON:return MONSTER_05_MODEL;
+        case DARKBEAST:return MONSTER_06_MODEL;
 
-        default: return MONSTER_01_MODEL;
+        default:std::cerr << "Unknown monster type" << std::endl;
+            exit(EXIT_FAILURE);
     }
 }
 
@@ -34,8 +38,12 @@ unsigned int Monster::getHealthFromMonsterType(MonsterType type)
         case ARMOGOHMA:return HEALTH_ARMOGOHMA;
         case KING_BOO:return HEALTH_KING_BOO;
         case DARKRAI:return HEALTH_DARKRAI;
+        case DARKNUT:return HEALTH_DARKNUT;
+        case HYDREIGON:return HEALTH_HYDREIGON;
+        case DARKBEAST:return HEALTH_DARKBEAST;
 
-        default: return 0;
+        default:std::cerr << "Unknown monster type" << std::endl;
+            exit(EXIT_FAILURE);
     }
 }
 
@@ -46,8 +54,12 @@ unsigned int Monster::getAttackFromMonsterType(MonsterType type)
         case ARMOGOHMA:return ATTACK_ARMOGOHMA;
         case KING_BOO:return ATTACK_KING_BOO;
         case DARKRAI:return ATTACK_DARKRAI;
+        case DARKNUT:return ATTACK_DARKNUT;
+        case HYDREIGON:return ATTACK_HYDREIGON;
+        case DARKBEAST:return ATTACK_DARKBEAST;
 
-        default: return 0;
+        default:std::cerr << "Unknown monster type" << std::endl;
+            exit(EXIT_FAILURE);
     }
 }
 
@@ -58,8 +70,12 @@ unsigned int Monster::getDefenseFromMonsterType(MonsterType type)
         case ARMOGOHMA:return DEFENSE_ARMOGOHMA;
         case KING_BOO:return DEFENSE_KING_BOO;
         case DARKRAI:return DEFENSE_DARKRAI;
+        case DARKNUT:return DEFENSE_DARKNUT;
+        case HYDREIGON:return DEFENSE_HYDREIGON;
+        case DARKBEAST:return DEFENSE_DARKBEAST;
 
-        default: return 0;
+        default:std::cerr << "Unknown monster type" << std::endl;
+            exit(EXIT_FAILURE);
     }
 }
 
@@ -70,8 +86,12 @@ unsigned int Monster::getMoneyFromMonsterType(MonsterType type)
         case ARMOGOHMA:return MONEY_ARMOGOHMA;
         case KING_BOO:return MONEY_KING_BOO;
         case DARKRAI:return MONEY_DARKRAI;
+        case DARKNUT:return MONEY_DARKNUT;
+        case HYDREIGON:return MONEY_HYDREIGON;
+        case DARKBEAST:return MONEY_DARKBEAST;
 
-        default: return 0;
+        default:std::cerr << "Unknown monster type" << std::endl;
+            exit(EXIT_FAILURE);
     }
 }
 
@@ -89,9 +109,22 @@ MonsterType Monster::getMonsterTypeFromName(const std::string &name)
     {
         return ARMOGOHMA;
     }
+    else if (name == "DARKNUT")
+    {
+        return DARKNUT;
+    }
+    else if (name == "HYDREIGON")
+    {
+        return HYDREIGON;
+    }
+    else if (name == "DARKBEAST")
+    {
+        return DARKBEAST;
+    }
     else
     {
-        return UNKNOWN_MONSTER;
+        std::cerr << "Unknown monster type" << std::endl;
+        exit(EXIT_FAILURE);
     }
 }
 
@@ -313,42 +346,44 @@ void Monster::createMonster(const std::string &string, std::vector<std::unique_p
 {
     std::vector<std::string> splitString = Utils::splitStringByDelimiter(string, ":");
 
-    if (splitString.size() != 4 && splitString.size() != 8)
+    if (splitString.size() != 5 && splitString.size() != 9)
     {
         std::cerr << "Error while reading the dungeon file: wrong number of arguments for monster" << std::endl;
     }
 
-    int         pos_i       = std::stoi(splitString[1]);
-    int         pos_j       = std::stoi(splitString[2]);
-    MonsterType monsterType = Monster::getMonsterTypeFromName(splitString[3]);
+    int           pos_i         = std::stoi(splitString[1]);
+    int           pos_j         = std::stoi(splitString[2]);
+    MonsterType   monsterType   = Monster::getMonsterTypeFromName(splitString[3]);
+    DirectionType directionType = Utils::getDirectionTypeFromString(splitString[4]);
 
     if (monsterType == UNKNOWN_MONSTER)
     {
         std::cerr << "Error while reading the dungeon file: unknown monster type" << std::endl;
+        exit(EXIT_FAILURE);
     }
-
+    
     else
     {
-        if (splitString.size() == 4)
+        if (splitString.size() == 5)
         {
             monsters.emplace_back(
                     Utils::make_unique<Monster>(
                             monsterType,
                             glm::vec3(pos_j, 0, -pos_i),
-                            DirectionType::SOUTH));
+                            directionType));
         }
 
         else
         {
-            int          hp      = std::stoi(splitString[4]);
-            unsigned int attack  = std::stoi(splitString[5]);
-            int          defense = std::stoi(splitString[6]);
-            int          speed   = std::stoi(splitString[7]);
+            int          hp      = std::stoi(splitString[5]);
+            unsigned int attack  = std::stoi(splitString[6]);
+            int          defense = std::stoi(splitString[7]);
+            int          speed   = std::stoi(splitString[8]);
             monsters.emplace_back(
                     Utils::make_unique<Monster>(
                             monsterType,
                             glm::vec3(pos_j, 0, -pos_i),
-                            DirectionType::SOUTH,
+                            directionType,
                             hp,
                             attack,
                             defense,

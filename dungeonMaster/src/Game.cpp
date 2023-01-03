@@ -272,7 +272,8 @@ void Game::initPtr()
                                                          _characterManager->getMonsters(),
                                                          _characterManager->getInteractableObjects());
     _drawingProgram->init();
-    _menu = Utils::make_unique<Menu>(_windowWidth, _windowHeight, _applicationPath, _drawingProgram, _windowManager);
+    _menu = Utils::make_unique<Menu>(_windowWidth, _windowHeight, _applicationPath, _drawingProgram, _windowManager,
+                                     _nbMoneyNeededToFinishGame, _nbMonsterKillNeededToFinishGame);
 }
 
 bool Game::gameWin() const

@@ -26,7 +26,8 @@ private:
 
 public:
     Menu(unsigned int windowWidth, unsigned int windowHeight, const glimac::FilePath &applicationPath,
-         std::unique_ptr<DrawingProgram> &drawingProgram, SDLWindowManager &windowManager);
+         std::unique_ptr<DrawingProgram> &drawingProgram, SDLWindowManager &windowManager,
+         unsigned int nbMoneyNeededToFinishGame, unsigned int nbMonsterKillNeededToFinishGame);
 
     ~Menu() = default;
 

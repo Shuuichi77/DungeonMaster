@@ -12,11 +12,11 @@ TextureManager::TextureManager(const glimac::FilePath &applicationPath)
     loadTextureFromFile(FLOOR_TEXTURE, "floor.png");
     loadTextureFromFile(WATER_TEXTURE, "water.png");
     loadTextureFromFile(INVENTORY_TEXTURE, "inventory.png");
-    loadTextureFromFile(EXIT_TEXTURE, "black.jpg");
+    loadTextureFromFile(ENTRY_TEXTURE, "black.jpg");
+    loadTextureFromFile(EXIT_TEXTURE, "white.jpg");
     loadTextureFromFile(MENU_START_TEXTURE, "menuStart.png");
     loadTextureFromFile(MENU_WIN_TEXTURE, "menuWin.png");
     loadTextureFromFile(MENU_LOSE_TEXTURE, "menuLose.png");
-
 }
 
 GLuint TextureManager::getTexture(const std::string &textureName) const

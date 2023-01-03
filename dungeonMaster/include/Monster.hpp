@@ -12,6 +12,9 @@ enum MonsterType
     ARMOGOHMA,
     DARKRAI,
     KING_BOO,
+    DARKNUT,
+    HYDREIGON,
+    DARKBEAST,
     UNKNOWN_MONSTER
 };
 
@@ -23,17 +26,30 @@ private:
     static constexpr const unsigned int DEFENSE_KING_BOO = 1;
     static constexpr const unsigned int MONEY_KING_BOO   = 10;
 
+    static constexpr const unsigned int HEALTH_DARKNUT  = 10;
+    static constexpr const unsigned int ATTACK_DARKNUT  = 5;
+    static constexpr const unsigned int DEFENSE_DARKNUT = 1;
+    static constexpr const unsigned int MONEY_DARKNUT   = 20;
+
+    static constexpr const unsigned int HEALTH_HYDREIGON  = 30;
+    static constexpr const unsigned int ATTACK_HYDREIGON  = 2;
+    static constexpr const unsigned int DEFENSE_HYDREIGON = 1;
+    static constexpr const unsigned int MONEY_HYDREIGON   = 25;
+
+    static constexpr const unsigned int HEALTH_DARKBEAST  = 20;
+    static constexpr const unsigned int ATTACK_DARKBEAST  = 4;
+    static constexpr const unsigned int DEFENSE_DARKBEAST = 1;
+    static constexpr const unsigned int MONEY_DARKBEAST   = 30;
+
     static constexpr const unsigned int HEALTH_ARMOGOHMA  = 15;
     static constexpr const unsigned int ATTACK_ARMOGOHMA  = 3;
     static constexpr const unsigned int DEFENSE_ARMOGOHMA = 2;
-    static constexpr const unsigned int MONEY_ARMOGOHMA   = 15;
+    static constexpr const unsigned int MONEY_ARMOGOHMA   = 40;
 
     static constexpr const unsigned int HEALTH_DARKRAI  = 20;
     static constexpr const unsigned int ATTACK_DARKRAI  = 4;
     static constexpr const unsigned int DEFENSE_DARKRAI = 3;
-    static constexpr const unsigned int MONEY_DARKRAI   = 20;
-
-    static constexpr const unsigned int NB_FRAME_ATTACKING = 5;
+    static constexpr const unsigned int MONEY_DARKRAI   = 50;
 
     const MonsterType _type;
 

@@ -29,6 +29,8 @@ private:
 
     const unsigned int _windowWidth;
     const unsigned int _windowHeight;
+    unsigned int       _nbMoneyNeededToFinishGame;
+    unsigned int       _nbMonsterKillNeededToFinishGame;
     const std::string  _fontFileName;
     TextFactory        _textFactory;
 
@@ -46,14 +48,18 @@ private:
     void loadVAO();
 
     void drawMenuInGame(const Player &player);
-    
+
     void initMessages();
+
+    std::string getMoneyMessage(unsigned int nbMoney) const;
+
+    std::string getMonstersKilledMessage(unsigned int nbMonster) const;
 
     friend class Menu;
 
 public:
-    TextManager(unsigned int windowWidth, unsigned int windowHeight,
-                const glimac::FilePath &applicationPath);
+    TextManager(unsigned int windowWidth, unsigned int windowHeight, const glimac::FilePath &applicationPath,
+                unsigned int nbMoneyNeededToFinishGame, unsigned int nbMonsterKillNeededToFinishGame);
 };
 
 

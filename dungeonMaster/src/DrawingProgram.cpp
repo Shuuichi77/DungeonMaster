@@ -83,16 +83,253 @@ void DrawingProgram::init()
 }
 
 
-void DrawingProgram::drawFixModel(const ModelType &modelType)
-{
-    drawModel(modelType, vec3(0.f), DirectionType::NEUTRAL);
-}
-
 void DrawingProgram::drawModel(const ModelType &modelType, const vec3 &position, const DirectionType &directionType)
 {
     _modelManager.drawModel(modelType, position, directionType, _program, _projMatrix, _uMVPMatrix, _uMVMatrix,
                             _uNormalMatrix);
 }
+
+void DrawingProgram::drawMap(const std::vector<std::vector<MapElement>> &map, int width, int height)
+{
+    _program.use();
+    glUniform3fv(_uLightPosition_vs, 1, value_ptr(_camera.getViewMatrix() * vec4(_camera.getPosition(), 1)));
+    _interface.drawInterface();
+    _modelManager.drawAllModels(_program, _projMatrix, _uMVPMatrix, _uMVMatrix, _uNormalMatrix);
+    drawQuads(map, width, height);
+    drawModelDebug();
+}
+
+void DrawingProgram::drawQuads(const std::vector<std::vector<MapElement>> &map, int width, int height)
+{
+    int numWall = 0;
+
+    for (int i = 0; i < map.size(); ++i)
+    {
+        for (int j = 0; j < map[i].size(); ++j)
+        {
+            if (map[i][j] == MapElement::WALL)
+            {
+                drawWalls(i, j, width, height, map, numWall);
+            }
+
+            else if (map[i][j] == MapElement::WATER)
+            {
+                drawFloorAndCeiling((float) j, 0, (float) i, TextureManager::WATER_TEXTURE);
+            }
+
+            else
+            {
+                drawWallAroundMapBorder((float) j, 0, (float) i, width, height, numWall);
+                drawFloorAndCeiling((float) j, 0, (float) i, TextureManager::FLOOR_TEXTURE);
+
+                if (map[i][j] == MapElement::ENTRY || map[i][j] == MapElement::EXIT)
+                {
+                    drawLadder((float) j, 0, (float) i, map[i][j]);
+                }
+            }
+        }
+    }
+}
+
+void DrawingProgram::drawWallAroundMapBorder(float x, float y, float z, int width, int height, int numWall)
+{
+    if ((int) x == 0)
+    {
+        drawWall(x - 1, y, z, DirectionType::EAST, numWall);
+    }
+
+    if ((int) z == 0)
+    {
+        drawWall(x, y, z - 1, DirectionType::NORTH, numWall);
+    }
+
+    if ((((int) z) + 1) == height)
+    {
+        drawWall(x, y, z + 1, DirectionType::SOUTH, numWall);
+    }
+
+    if ((((int) x) + 1) == width)
+    {
+        drawWall(x + 1, y, z, DirectionType::WEST, numWall);
+    }
+}
+
+void DrawingProgram::drawLadder(float x, float y, float z, const MapElement &mapElement)
+{
+    mat4 MVMMatrix = mat4(1);
+    if (mapElement == MapElement::ENTRY)
+    {
+        glBindTexture(GL_TEXTURE_2D, _textureManager.getTexture(TextureManager::ENTRY_TEXTURE));
+        glUniform1i(_uTexture, 0);
+        MVMMatrix = translate(MVMMatrix, vec3(x, y + 0.01, -z) - ModelTransformations::getGlobalTranslate());
+    }
+    else if (mapElement == MapElement::EXIT)
+    {
+        glBindTexture(GL_TEXTURE_2D, _textureManager.getTexture(TextureManager::EXIT_TEXTURE));
+        glUniform1i(_uTexture, 0);
+        MVMMatrix = translate(MVMMatrix, vec3(x, y + 0.98, -z) - ModelTransformations::getGlobalTranslate());
+    }
+
+    MVMMatrix = rotate(MVMMatrix, radians(90.f), vec3(1, 0, 0));
+    MVMMatrix = scale(MVMMatrix, vec3(1. / 1.3) * ModelTransformations::getGlobalScale());
+    DrawUtils::setUniformMatrix(MVMMatrix, _camera.getViewMatrix(), _projMatrix, _uMVPMatrix, _uMVMatrix,
+                                _uNormalMatrix);
+
+    glBindVertexArray(_vao);
+    glDrawArrays(GL_TRIANGLES, 0, 6);
+    glBindVertexArray(0);
+
+    drawModel(LADDER_MODEL, vec3(x, y, -z), DirectionType::SOUTH);
+}
+
+void DrawingProgram::drawWalls(int i, int j, int width, int height, const std::vector<std::vector<MapElement>> &map,
+                               int &numWall)
+{
+    // Check North
+    if (i + 1 < height && map[i + 1][j] != MapElement::WALL)
+    {
+        drawWall((float) j, 0, (float) i, DirectionType::NORTH, numWall++);
+    }
+
+    // Check South
+    if (i - 1 >= 0 && map[i - 1][j] != MapElement::WALL)
+    {
+        drawWall((float) j, 0, (float) i, DirectionType::SOUTH, numWall++);
+    }
+    // Check East
+    if (j + 1 < width && map[i][j + 1] != MapElement::WALL)
+    {
+        drawWall((float) j, 0, (float) i, DirectionType::EAST, numWall++);
+    }
+    // Check West
+    if (j - 1 >= 0 && map[i][j - 1] != MapElement::WALL)
+    {
+        drawWall((float) j, 0, (float) i, DirectionType::WEST, numWall++);
+    }
+}
+
+void DrawingProgram::drawWall(float x, float y, float z, DirectionType wallOrientation, int numWall)
+{
+    glUniform1i(glGetUniformLocation(_program.getGLId(), "uIsAModel"), false);
+
+    glBindTexture(GL_TEXTURE_2D, _textureManager.getWallTexture(numWall));
+    glUniform1i(_uTexture, 0);
+
+    mat4 MVMMatrix = mat4(1);
+
+    if (wallOrientation == DirectionType::NORTH)
+    {
+        MVMMatrix = translate(MVMMatrix, vec3(x, y, -z - 0.5f) + ModelTransformations::getGlobalTranslate());
+        MVMMatrix = rotate(MVMMatrix, radians(180.f), vec3(0, 1, 0));
+    }
+    if (wallOrientation == DirectionType::SOUTH)
+    {
+        MVMMatrix = translate(MVMMatrix, vec3(x, y, -z + 0.5f) + ModelTransformations::getGlobalTranslate());
+    }
+    else if (wallOrientation == DirectionType::WEST)
+    {
+        MVMMatrix = translate(MVMMatrix, vec3(x - 0.5f, y, -z) + ModelTransformations::getGlobalTranslate());
+        MVMMatrix = rotate(MVMMatrix, radians(-90.f), vec3(0, 1, 0));
+    }
+    else if (wallOrientation == DirectionType::EAST)
+    {
+        MVMMatrix = translate(MVMMatrix, vec3(x + 0.5f, y, -z) + ModelTransformations::getGlobalTranslate());
+        MVMMatrix = rotate(MVMMatrix, radians(90.f), vec3(0, 1, 0));
+    }
+
+    DrawUtils::setUniformMatrix(MVMMatrix, _camera.getViewMatrix(), _projMatrix, _uMVPMatrix, _uMVMatrix,
+                                _uNormalMatrix);
+
+    glBindVertexArray(_vao);
+    glDrawArrays(GL_TRIANGLES, 0, 6);
+    glBindVertexArray(0);
+}
+
+void DrawingProgram::drawFloorAndCeiling(float x, float y, float z, const std::string &floorTextureName)
+{
+
+    glUniform1i(glGetUniformLocation(_program.getGLId(), "uIsAModel"), false);
+
+    // Floor
+    glBindTexture(GL_TEXTURE_2D, _textureManager.getTexture(floorTextureName));
+    glUniform1i(_uTexture, 0);
+    mat4 MVMMatrix = mat4(1);
+    MVMMatrix = translate(MVMMatrix, vec3(x, y - 0.5, -z) + ModelTransformations::getGlobalTranslate());
+    MVMMatrix = rotate(MVMMatrix, radians(90.f + 180.f), vec3(1, 0, 0));
+    DrawUtils::setUniformMatrix(MVMMatrix, _camera.getViewMatrix(), _projMatrix, _uMVPMatrix, _uMVMatrix,
+                                _uNormalMatrix);
+    glBindVertexArray(_vao);
+    glDrawArrays(GL_TRIANGLES, 0, 6);
+    glBindVertexArray(0);
+
+    // Ceiling
+    glBindTexture(GL_TEXTURE_2D, _textureManager.getTexture(TextureManager::WALL_TEXTURE_3));
+    glUniform1i(_uTexture, 0);
+    MVMMatrix = mat4(1);
+    MVMMatrix = translate(MVMMatrix, vec3(x, y + 0.5, -z) + ModelTransformations::getGlobalTranslate());
+    MVMMatrix = rotate(MVMMatrix, radians(90.f), vec3(1, 0, 0));
+    DrawUtils::setUniformMatrix(MVMMatrix, _camera.getViewMatrix(), _projMatrix, _uMVPMatrix, _uMVMatrix,
+                                _uNormalMatrix);
+    glBindVertexArray(_vao);
+    glDrawArrays(GL_TRIANGLES, 0, 6);
+    glBindVertexArray(0);
+}
+
+void DrawingProgram::drawMenuStarting()
+{
+    glUniform1i(glGetUniformLocation(_program.getGLId(), "uIsAModel"), false);
+    glBindTexture(GL_TEXTURE_2D, _textureManager.getTexture(TextureManager::MENU_START_TEXTURE));
+    glUniform1i(_uTexture, 0);
+
+    ModelTransformation modelTransformation = _modelManager.getModelTransformations().getModelTransformation(
+            MENU_MODEL);
+
+    mat4 MVMMatrix = _modelManager.applyModelTransformation(modelTransformation, _camera.getPosition());
+    DrawUtils::setUniformMatrix(MVMMatrix, _camera.getViewMatrix(), _projMatrix, _uMVPMatrix, _uMVMatrix,
+                                _uNormalMatrix);
+
+    glBindVertexArray(_vao);
+    glDrawArrays(GL_TRIANGLES, 0, 6);
+    glBindVertexArray(0);
+}
+
+void DrawingProgram::drawMenuWin()
+{
+    glUniform1i(glGetUniformLocation(_program.getGLId(), "uIsAModel"), false);
+    glBindTexture(GL_TEXTURE_2D, _textureManager.getTexture(TextureManager::MENU_WIN_TEXTURE));
+    glUniform1i(_uTexture, 0);
+
+    ModelTransformation modelTransformation = _modelManager.getModelTransformations().getModelTransformation(
+            MENU_MODEL);
+
+    mat4 MVMMatrix = _modelManager.applyModelTransformation(modelTransformation, _camera.getPosition());
+    DrawUtils::setUniformMatrix(MVMMatrix, _camera.getViewMatrix(), _projMatrix, _uMVPMatrix, _uMVMatrix,
+                                _uNormalMatrix);
+
+    glBindVertexArray(_vao);
+    glDrawArrays(GL_TRIANGLES, 0, 6);
+    glBindVertexArray(0);
+}
+
+void DrawingProgram::drawMenuLose()
+{
+    glUniform1i(glGetUniformLocation(_program.getGLId(), "uIsAModel"), false);
+
+    glBindTexture(GL_TEXTURE_2D, _textureManager.getTexture(TextureManager::MENU_LOSE_TEXTURE));
+    glUniform1i(_uTexture, 0);
+
+    ModelTransformation modelTransformation = _modelManager.getModelTransformations().getModelTransformation(
+            MENU_MODEL);
+
+    mat4 MVMMatrix = _modelManager.applyModelTransformation(modelTransformation, _camera.getPosition());
+    DrawUtils::setUniformMatrix(MVMMatrix, _camera.getViewMatrix(), _projMatrix, _uMVPMatrix, _uMVMatrix,
+                                _uNormalMatrix);
+
+    glBindVertexArray(_vao);
+    glDrawArrays(GL_TRIANGLES, 0, 6);
+    glBindVertexArray(0);
+}
+
 
 bool DrawingProgram::canChangeAgain()
 {
@@ -445,12 +682,12 @@ void DrawingProgram::drawModelDebug()
     // ------------------------------------------------------------------------------------     -
     mat4 MVMMatrix = mat4(1.0f);
 
-    // Modèle fixe
-    MVMMatrix = translate(MVMMatrix, vec3(
-            _x + _tx,
-            _y + _ty,
-            -_z + _tz
-    ) - ModelTransformations::getGlobalTranslate());
+//    // Modèle fixe
+//    MVMMatrix = translate(MVMMatrix, vec3(
+//            _x + _tx,
+//            _y + _ty,
+//            -_z + _tz
+//    ) - ModelTransformations::getGlobalTranslate());
 
 //    // Modèle fixe mais MOBILE en fait
 //    MVMMatrix = translate(MVMMatrix, vec3(
@@ -460,263 +697,29 @@ void DrawingProgram::drawModelDebug()
 //    ) - ModelTransformations::getGlobalTranslate());
 //
     // Modèle mobile
-//    vec3 camPos = _camera.getPosition();
-//    MVMMatrix = translate(MVMMatrix, vec3(
-//            camPos.x + _tx,
-//            camPos.y + _ty,
-//            camPos.z + _tz
-//    ) - ModelTransformations::getGlobalTranslate());
-//
-//    MVMMatrix = rotate(MVMMatrix, radians(_rx), vec3(1, 0, 0));
-//    MVMMatrix = rotate(MVMMatrix, radians(_ry), vec3(0, 1, 0));
-//    MVMMatrix = rotate(MVMMatrix, radians(_rz), vec3(0, 0, 1));
+    vec3 camPos = _camera.getPosition();
+    MVMMatrix = translate(MVMMatrix, vec3(
+            camPos.x + _tx,
+            camPos.y + _ty,
+            camPos.z + _tz
+    ) - ModelTransformations::getGlobalTranslate());
+
+    MVMMatrix = rotate(MVMMatrix, radians(_rx), vec3(1, 0, 0));
+    MVMMatrix = rotate(MVMMatrix, radians(_ry), vec3(0, 1, 0));
+    MVMMatrix = rotate(MVMMatrix, radians(_rz), vec3(0, 0, 1));
 
     vec3 scaleVec = vec3(1. / _scaled) * ModelTransformations::getGlobalScale();
     MVMMatrix = scale(MVMMatrix, scaleVec);
     DrawUtils::setUniformMatrix(MVMMatrix, _camera.getViewMatrix(), _projMatrix, _uMVPMatrix, _uMVMatrix,
                                 _uNormalMatrix);
 
+    // Texture
 //    glBindTexture(GL_TEXTURE_2D, _textureManager.getTexture(TextureManager::MENU_WIN_TEXTURE));
 //    glBindVertexArray(_vao);
 //    glDrawArrays(GL_TRIANGLES, 0, 6);
 //    glBindVertexArray(0);
 
-//    _modelManager.drawModelDebug(MONSTERS_ATTACK_MODEL, _camera.getPosition(), _program, _projMatrix, _uMVPMatrix,
-//                                 _uMVMatrix,
-//                                 _uNormalMatrix, MVMMatrix);
+    // Model
+//    _modelManager.drawModelDebug(KEY_MODEL, _camera.getPosition(), _program, _projMatrix, _uMVPMatrix,
+//                                 _uMVMatrix, _uNormalMatrix, MVMMatrix);
 }
-
-void DrawingProgram::drawMap(const std::vector<std::vector<MapElement>> &map, int width, int height)
-{
-    _program.use();
-    glUniform3fv(_uLightPosition_vs, 1, value_ptr(_camera.getViewMatrix() * vec4(_camera.getPosition(), 1)));
-    _interface.drawInterface();
-    _modelManager.drawAllModels(_program, _projMatrix, _uMVPMatrix, _uMVMatrix, _uNormalMatrix);
-    drawQuads(map, width, height);
-//    drawModelDebug();
-}
-
-void DrawingProgram::drawQuads(const std::vector<std::vector<MapElement>> &map, int width, int height)
-{
-    int numWall = 0;
-
-    for (int i = 0; i < map.size(); ++i)
-    {
-        for (int j = 0; j < map[i].size(); ++j)
-        {
-            if (map[i][j] == MapElement::WALL)
-            {
-                drawWalls(i, j, width, height, map, numWall);
-            }
-
-            else if (map[i][j] == MapElement::WATER)
-            {
-                drawFloorAndCeiling((float) j, 0, (float) i, TextureManager::WATER_TEXTURE);
-            }
-
-            else
-            {
-                drawWallAroundMapBorder((float) j, 0, (float) i, width, height, numWall);
-                drawFloorAndCeiling((float) j, 0, (float) i, TextureManager::FLOOR_TEXTURE);
-
-                if (map[i][j] == MapElement::ENTRY || map[i][j] == MapElement::EXIT)
-                {
-                    drawLadder((float) j, 0, (float) i);
-                }
-            }
-        }
-    }
-}
-
-void DrawingProgram::drawWallAroundMapBorder(float x, float y, float z, int width, int height, int numWall)
-{
-    if ((int) x == 0)
-    {
-        drawWall(x - 1, y, z, DirectionType::EAST, numWall);
-    }
-
-    if ((int) z == 0)
-    {
-        drawWall(x, y, z - 1, DirectionType::NORTH, numWall);
-    }
-
-    if ((((int) z) + 1) == height)
-    {
-        drawWall(x, y, z + 1, DirectionType::SOUTH, numWall);
-    }
-
-    if ((((int) x) + 1) == width)
-    {
-        drawWall(x + 1, y, z, DirectionType::WEST, numWall);
-    }
-}
-
-void DrawingProgram::drawLadder(float x, float y, float z)
-{
-    glBindTexture(GL_TEXTURE_2D, _textureManager.getTexture(TextureManager::EXIT_TEXTURE));
-    glUniform1i(_uTexture, 0);
-    mat4 MVMMatrix = mat4(1);
-    MVMMatrix = translate(MVMMatrix, vec3(x, y + 0.01, -z) - ModelTransformations::getGlobalTranslate());
-    MVMMatrix = rotate(MVMMatrix, radians(90.f), vec3(1, 0, 0));
-    MVMMatrix = scale(MVMMatrix, vec3(1. / 1.3) * ModelTransformations::getGlobalScale());
-    DrawUtils::setUniformMatrix(MVMMatrix, _camera.getViewMatrix(), _projMatrix, _uMVPMatrix, _uMVMatrix,
-                                _uNormalMatrix);
-
-    glBindVertexArray(_vao);
-    glDrawArrays(GL_TRIANGLES, 0, 6);
-    glBindVertexArray(0);
-
-    drawModel(LADDER_MODEL, vec3(x, y, -z), DirectionType::SOUTH);
-}
-
-void DrawingProgram::drawWalls(int i, int j, int width, int height, const std::vector<std::vector<MapElement>> &map,
-                               int &numWall)
-{
-    // Check North
-    if (i + 1 < height && map[i + 1][j] != MapElement::WALL)
-    {
-        drawWall((float) j, 0, (float) i, DirectionType::NORTH, numWall++);
-    }
-
-    // Check South
-    if (i - 1 >= 0 && map[i - 1][j] != MapElement::WALL)
-    {
-        drawWall((float) j, 0, (float) i, DirectionType::SOUTH, numWall++);
-    }
-    // Check East
-    if (j + 1 < width && map[i][j + 1] != MapElement::WALL)
-    {
-        drawWall((float) j, 0, (float) i, DirectionType::EAST, numWall++);
-    }
-    // Check West
-    if (j - 1 >= 0 && map[i][j - 1] != MapElement::WALL)
-    {
-        drawWall((float) j, 0, (float) i, DirectionType::WEST, numWall++);
-    }
-}
-
-void DrawingProgram::drawWall(float x, float y, float z, DirectionType wallOrientation, int numWall)
-{
-    glUniform1i(glGetUniformLocation(_program.getGLId(), "uIsAModel"), false);
-
-    glBindTexture(GL_TEXTURE_2D, _textureManager.getWallTexture(numWall));
-    glUniform1i(_uTexture, 0);
-
-    mat4 MVMMatrix = mat4(1);
-
-    if (wallOrientation == DirectionType::NORTH)
-    {
-        MVMMatrix = translate(MVMMatrix, vec3(x, y, -z - 0.5f) + ModelTransformations::getGlobalTranslate());
-        MVMMatrix = rotate(MVMMatrix, radians(180.f), vec3(0, 1, 0));
-    }
-    if (wallOrientation == DirectionType::SOUTH)
-    {
-        MVMMatrix = translate(MVMMatrix, vec3(x, y, -z + 0.5f) + ModelTransformations::getGlobalTranslate());
-    }
-    else if (wallOrientation == DirectionType::WEST)
-    {
-        MVMMatrix = translate(MVMMatrix, vec3(x - 0.5f, y, -z) + ModelTransformations::getGlobalTranslate());
-        MVMMatrix = rotate(MVMMatrix, radians(-90.f), vec3(0, 1, 0));
-    }
-    else if (wallOrientation == DirectionType::EAST)
-    {
-        MVMMatrix = translate(MVMMatrix, vec3(x + 0.5f, y, -z) + ModelTransformations::getGlobalTranslate());
-        MVMMatrix = rotate(MVMMatrix, radians(90.f), vec3(0, 1, 0));
-    }
-
-    DrawUtils::setUniformMatrix(MVMMatrix, _camera.getViewMatrix(), _projMatrix, _uMVPMatrix, _uMVMatrix,
-                                _uNormalMatrix);
-
-    glBindVertexArray(_vao);
-    glDrawArrays(GL_TRIANGLES, 0, 6);
-    glBindVertexArray(0);
-}
-
-void DrawingProgram::drawFloorAndCeiling(float x, float y, float z, const std::string &floorTextureName)
-{
-
-    glUniform1i(glGetUniformLocation(_program.getGLId(), "uIsAModel"), false);
-
-    // Floor
-    glBindTexture(GL_TEXTURE_2D, _textureManager.getTexture(floorTextureName));
-    glUniform1i(_uTexture, 0);
-    mat4 MVMMatrix = mat4(1);
-    MVMMatrix = translate(MVMMatrix, vec3(x, y - 0.5, -z) + ModelTransformations::getGlobalTranslate());
-    MVMMatrix = rotate(MVMMatrix, radians(90.f + 180.f), vec3(1, 0, 0));
-    DrawUtils::setUniformMatrix(MVMMatrix, _camera.getViewMatrix(), _projMatrix, _uMVPMatrix, _uMVMatrix,
-                                _uNormalMatrix);
-    glBindVertexArray(_vao);
-    glDrawArrays(GL_TRIANGLES, 0, 6);
-    glBindVertexArray(0);
-
-    // Ceiling
-    glBindTexture(GL_TEXTURE_2D, _textureManager.getTexture(TextureManager::WALL_TEXTURE_3));
-    glUniform1i(_uTexture, 0);
-    MVMMatrix = mat4(1);
-    MVMMatrix = translate(MVMMatrix, vec3(x, y + 0.5, -z) + ModelTransformations::getGlobalTranslate());
-    MVMMatrix = rotate(MVMMatrix, radians(90.f), vec3(1, 0, 0));
-    DrawUtils::setUniformMatrix(MVMMatrix, _camera.getViewMatrix(), _projMatrix, _uMVPMatrix, _uMVMatrix,
-                                _uNormalMatrix);
-    glBindVertexArray(_vao);
-    glDrawArrays(GL_TRIANGLES, 0, 6);
-    glBindVertexArray(0);
-}
-
-void DrawingProgram::drawMenuStarting()
-{
-    glUniform1i(glGetUniformLocation(_program.getGLId(), "uIsAModel"), false);
-    glBindTexture(GL_TEXTURE_2D, _textureManager.getTexture(TextureManager::MENU_START_TEXTURE));
-    glUniform1i(_uTexture, 0);
-
-    ModelTransformation modelTransformation = _modelManager.getModelTransformations().getModelTransformation(
-            MENU_MODEL);
-
-    mat4 MVMMatrix = _modelManager.applyModelTransformation(modelTransformation, _camera.getPosition());
-    DrawUtils::setUniformMatrix(MVMMatrix, _camera.getViewMatrix(), _projMatrix, _uMVPMatrix, _uMVMatrix,
-                                _uNormalMatrix);
-
-    glBindVertexArray(_vao);
-    glDrawArrays(GL_TRIANGLES, 0, 6);
-    glBindVertexArray(0);
-}
-
-void DrawingProgram::drawMenuWin()
-{
-    glUniform1i(glGetUniformLocation(_program.getGLId(), "uIsAModel"), false);
-    glBindTexture(GL_TEXTURE_2D, _textureManager.getTexture(TextureManager::MENU_WIN_TEXTURE));
-    glUniform1i(_uTexture, 0);
-
-    ModelTransformation modelTransformation = _modelManager.getModelTransformations().getModelTransformation(
-            MENU_MODEL);
-
-    mat4 MVMMatrix = _modelManager.applyModelTransformation(modelTransformation, _camera.getPosition());
-    DrawUtils::setUniformMatrix(MVMMatrix, _camera.getViewMatrix(), _projMatrix, _uMVPMatrix, _uMVMatrix,
-                                _uNormalMatrix);
-
-    glBindVertexArray(_vao);
-    glDrawArrays(GL_TRIANGLES, 0, 6);
-    glBindVertexArray(0);
-}
-
-void DrawingProgram::drawMenuLose()
-{
-    glUniform1i(glGetUniformLocation(_program.getGLId(), "uIsAModel"), false);
-
-    glBindTexture(GL_TEXTURE_2D, _textureManager.getTexture(TextureManager::MENU_LOSE_TEXTURE));
-    glUniform1i(_uTexture, 0);
-
-    ModelTransformation modelTransformation = _modelManager.getModelTransformations().getModelTransformation(
-            MENU_MODEL);
-
-    mat4 MVMMatrix = _modelManager.applyModelTransformation(modelTransformation, _camera.getPosition());
-    DrawUtils::setUniformMatrix(MVMMatrix, _camera.getViewMatrix(), _projMatrix, _uMVPMatrix, _uMVMatrix,
-                                _uNormalMatrix);
-
-    glBindVertexArray(_vao);
-    glDrawArrays(GL_TRIANGLES, 0, 6);
-    glBindVertexArray(0);
-}
-
-
-
-

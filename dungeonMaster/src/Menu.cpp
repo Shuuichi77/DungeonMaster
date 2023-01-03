@@ -1,9 +1,11 @@
 #include "../include/Menu.hpp"
 
 Menu::Menu(unsigned int windowWidth, unsigned int windowHeight, const glimac::FilePath &applicationPath,
-           std::unique_ptr<DrawingProgram> &drawingProgram, SDLWindowManager &windowManager)
+           std::unique_ptr<DrawingProgram> &drawingProgram, SDLWindowManager &windowManager,
+           unsigned int nbMoneyNeededToFinishGame, unsigned int nbMonsterKillNeededToFinishGame)
         : _drawingProgram(drawingProgram)
-        , _textManager(windowWidth, windowHeight, applicationPath)
+        , _textManager(windowWidth, windowHeight, applicationPath, nbMoneyNeededToFinishGame,
+                       nbMonsterKillNeededToFinishGame)
         , _windowWidth(windowWidth)
         , _windowHeight(windowHeight)
         , _windowManager(windowManager) {}
