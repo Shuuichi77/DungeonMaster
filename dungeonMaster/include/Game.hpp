@@ -19,7 +19,7 @@ using namespace std;
 class Game
 {
 private:
-    static constexpr const char *DEFAULT_MAP                     = "dungeon_01.txt";
+    static constexpr const char *DEFAULT_MAP                     = "dungeon_02.txt";
     bool                        _gameInterrupted                 = false;
     bool                        _gameLost                        = false;
     bool                        _retryGame                       = false;
