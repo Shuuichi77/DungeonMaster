@@ -96,7 +96,7 @@ void DrawingProgram::drawMap(const std::vector<std::vector<MapElement>> &map, in
     _interface.drawInterface();
     _modelManager.drawAllModels(_program, _projMatrix, _uMVPMatrix, _uMVMatrix, _uNormalMatrix);
     drawQuads(map, width, height);
-    drawModelDebug();
+//    drawModelDebug();
 }
 
 void DrawingProgram::drawQuads(const std::vector<std::vector<MapElement>> &map, int width, int height)
