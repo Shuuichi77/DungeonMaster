@@ -8,20 +8,6 @@ Player::Player(const glm::vec3 &position, const DirectionType &directionType)
     addWeapon(FIRST_WEAPON_TYPE);
 }
 
-void Player::use(ItemType type)
-{
-    switch (type)
-    {
-        case MILK:addHealth(2);
-            break;
-        case HEALTH_POTION:addHealth(5);
-            break;
-        case FAIRY:addHealth(BASE_HEALTH_PLAYER);
-            break;
-    }
-
-}
-
 void Player::addHealth(unsigned int health)
 {
     if (_health < BASE_HEALTH_PLAYER)
@@ -71,11 +57,22 @@ void Player::addKey()
     _nbKeys++;
 }
 
-void Player::useItem(unsigned int index)
+void Player::useItem(unsigned int index, Music music)
 {
     if (_items.size() > index)
     {
-        use(_items[index]);
+        switch (_items[index])
+        {
+            case MILK:addHealth(2);
+                music.playBottle();
+                break;
+            case HEALTH_POTION:addHealth(5);
+                music.playBottle();
+                break;
+            case FAIRY:addHealth(BASE_HEALTH_PLAYER);
+                music.playFairy();
+                break;
+        }
         _items.erase(_items.begin() + index);
     }
 }
@@ -143,9 +140,6 @@ bool Player::hasEnoughMoneyAndMonsterKilled(unsigned int money, unsigned int nbM
 {
     return _money >= money && _nbMonstersKilled >= nbMonstersKilled;
 }
-
-
-
 
 
 

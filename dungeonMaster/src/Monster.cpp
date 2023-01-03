@@ -152,19 +152,20 @@ void Monster::moveIfGoodDirectionAndNotWater(const DirectionType &nextDirection,
 
 bool Monster::update(Player &player, const std::vector<std::vector<MapElement>> &map,
                      std::vector<std::unique_ptr<Monster>> &monsters,
-                     std::vector<std::unique_ptr<InteractableObject>> &interactableObjects)
+                     std::vector<std::unique_ptr<InteractableObject>> &interactableObjects, Music &music)
 {
     glm::vec3 playerPosition  = player.getPosition();
     glm::vec3 monsterPosition = getPosition();
 
     if (canAttackPlayer(playerPosition))
     {
+        setIsAttacking(true);
+        music.playPlayerHurt();
         if (player.loseHealth(getAttack()))
         {
             return true;
         }
     }
-
 
     else if (Utils::cmpff(playerPosition.x, monsterPosition.x))
     {

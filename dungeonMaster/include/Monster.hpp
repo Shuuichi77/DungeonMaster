@@ -23,7 +23,6 @@ private:
     static constexpr const unsigned int DEFENSE_KING_BOO = 1;
     static constexpr const unsigned int MONEY_KING_BOO   = 10;
 
-
     static constexpr const unsigned int HEALTH_ARMOGOHMA  = 15;
     static constexpr const unsigned int ATTACK_ARMOGOHMA  = 3;
     static constexpr const unsigned int DEFENSE_ARMOGOHMA = 2;
@@ -33,6 +32,8 @@ private:
     static constexpr const unsigned int ATTACK_DARKRAI  = 4;
     static constexpr const unsigned int DEFENSE_DARKRAI = 3;
     static constexpr const unsigned int MONEY_DARKRAI   = 20;
+
+    static constexpr const unsigned int NB_FRAME_ATTACKING = 5;
 
     const MonsterType _type;
 
@@ -52,7 +53,7 @@ private:
 
     bool update(Player &player, const std::vector<std::vector<MapElement>> &map,
                 std::vector<std::unique_ptr<Monster>> &monsters,
-                std::vector<std::unique_ptr<InteractableObject>> &interactableObjects);
+                std::vector<std::unique_ptr<InteractableObject>> &interactableObjects, Music &music);
 
     std::vector<glm::vec3> getInteractablesPos(std::vector<std::unique_ptr<Monster>> &monsters,
                                                std::vector<std::unique_ptr<InteractableObject>> &interactableObjects);

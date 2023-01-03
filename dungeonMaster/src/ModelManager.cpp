@@ -5,41 +5,33 @@
 ModelManager::ModelManager(const glimac::FilePath &applicationPath, const FreeflyCamera &camera,
                            std::vector<std::unique_ptr<Monster>> &monstersToDraw,
                            std::vector<std::unique_ptr<InteractableObject>> &interactableObjectsToDraw)
-        : _directory(applicationPath.dirPath() + "assets/models")
+        : _directory(applicationPath.dirPath() + "/assets/models")
         , _camera(camera)
         , _modelTransformations()
         , _monstersToDraw(monstersToDraw)
         , _interactableObjectsToDraw(interactableObjectsToDraw)
 {
-    // TODO: temporary directory
-    _directory = "/home/johnson/CLionProjects/DungeonMaster/";
-
-    loadModelFromFile("dungeonMaster/assets/models/Armogohma/Armogohma.dae", MONSTER_01_MODEL);
-    loadModelFromFile("dungeonMaster/assets/models/KingBoo/KingBoo.dae", MONSTER_02_MODEL);
-    loadModelFromFile("dungeonMaster/assets/models/Darkrai/Darkrai.obj", MONSTER_03_MODEL);
-    loadModelFromFile("dungeonMaster/assets/models/Sword01/Sword01.dae", WOODEN_SWORD_IN_INVENTORY_MODEL);
-    loadModelFromFile("dungeonMaster/assets/models/Sword02/Sword02.dae", ROYAL_SWORD_IN_INVENTORY_MODEL);
-    loadModelFromFile("dungeonMaster/assets/models/Sword03/Sword03.dae", MASTER_SWORD_IN_INVENTORY_MODEL);
-    loadModelFromFile("dungeonMaster/assets/models/Sword01/Sword01.dae", WOODEN_SWORD_MODEL);
-    loadModelFromFile("dungeonMaster/assets/models/Sword02/Sword02.dae", ROYAL_SWORD_MODEL);
-    loadModelFromFile("dungeonMaster/assets/models/Sword03/Sword03.dae", MASTER_SWORD_MODEL);
-    loadModelFromFile("dungeonMaster/assets/models/Health/Health.dae", HEALTH_MODEL);
-    loadModelFromFile("dungeonMaster/assets/models/Stairs/Stairs.obj", LADDER_MODEL);
-    loadModelFromFile("dungeonMaster/assets/models/Chest/Chest.obj", CHEST_MODEL);
-    loadModelFromFile("dungeonMaster/assets/models/Money/Money.dae", MONEY_MODEL);
-    loadModelFromFile("dungeonMaster/assets/models/Door/Door.obj", DOOR_MODEL);
-    loadModelFromFile("dungeonMaster/assets/models/Milk/Milk.obj", MILK_MODEL);
-    loadModelFromFile("dungeonMaster/assets/models/HealthPotion/HealthPotion.obj", HEALTH_POTION_MODEL);
-    loadModelFromFile("dungeonMaster/assets/models/Fairy/Fairy.fbx", FAIRY_MODEL);
-    loadModelFromFile("dungeonMaster/assets/models/Key/Key.dae", KEY_MODEL);
-
-
+    loadModelFromFile(_directory + "/Armogohma/Armogohma.dae", MONSTER_01_MODEL);
+    loadModelFromFile(_directory + "/KingBoo/KingBoo.dae", MONSTER_02_MODEL);
+    loadModelFromFile(_directory + "/Darkrai/Darkrai.obj", MONSTER_03_MODEL);
+    loadModelFromFile(_directory + "/MonstersAttack/MonstersAttack.fbx", MONSTERS_ATTACK_MODEL);
+    loadModelFromFile(_directory + "/Sword01/Sword01.dae", WOODEN_SWORD_MODEL);
+    loadModelFromFile(_directory + "/Sword02/Sword02.dae", ROYAL_SWORD_MODEL);
+    loadModelFromFile(_directory + "/Sword03/Sword03.dae", MASTER_SWORD_MODEL);
+    loadModelFromFile(_directory + "/Health/Health.dae", HEALTH_MODEL);
+    loadModelFromFile(_directory + "/Stairs/Stairs.obj", LADDER_MODEL);
+    loadModelFromFile(_directory + "/Chest/Chest.obj", CHEST_MODEL);
+    loadModelFromFile(_directory + "/Money/Money.dae", MONEY_MODEL);
+    loadModelFromFile(_directory + "/Door/Door.obj", DOOR_MODEL);
+    loadModelFromFile(_directory + "/Milk/Milk.obj", MILK_MODEL);
+    loadModelFromFile(_directory + "/HealthPotion/HealthPotion.obj", HEALTH_POTION_MODEL);
+    loadModelFromFile(_directory + "/Fairy/Fairy.fbx", FAIRY_MODEL);
+    loadModelFromFile(_directory + "/Key/Key.dae", KEY_MODEL);
 }
 
 bool ModelManager::loadModelFromFile(const std::string &path, const ModelType &modelType)
 {
-    std::string modelPath = _directory + path;
-    Model       model(modelPath);
+    Model model(path);
 
     if (model.getMeshesSize() == 0)
     {
@@ -124,12 +116,34 @@ mat4 ModelManager::applyModelTransformation(const ModelTransformation &modelTran
                                       : transformMobileModel(MVMMatrix, position, modelTransformation));
 }
 
-void ModelManager::drawFixModel(const ModelType &modelType, const glimac::Program &program, const mat4 &projMatrix,
-                                GLint uMVPMatrix,
-                                GLint uMVMatrix, GLint uNormalMatrix)
+void ModelManager::drawWeapon(const ModelType &modelType, const glimac::Program &program, const mat4 &projMatrix,
+                              GLint uMVPMatrix, GLint uMVMatrix, GLint uNormalMatrix, bool isAttacking)
 {
-    drawModel(modelType, vec3(0, 0, 0), DirectionType::NEUTRAL, program, projMatrix, uMVPMatrix, uMVMatrix,
-              uNormalMatrix);
+    try
+    {
+        Model &model = _models.at(modelType);
+        try
+        {
+            ModelTransformation modelTransformation = _modelTransformations.getModelTransformation(modelType,
+                                                                                                   DirectionType::NEUTRAL);
+            if (isAttacking)
+            {
+                modelTransformation.rotation += _modelTransformations.getRotationForAttackingWeapon();
+            }
+            mat4 MVMMatrix = applyModelTransformation(modelTransformation,
+                                                      _camera.getPosition());
+            DrawUtils::setUniformMatrix(MVMMatrix, _camera.getViewMatrix(), projMatrix, uMVPMatrix, uMVMatrix,
+                                        uNormalMatrix);
+            model.draw(program);
+        } catch (std::out_of_range &e)
+        {
+            std::cerr << "Model Transformation " << modelType << " not found" << std::endl;
+        }
+
+    } catch (std::out_of_range &e)
+    {
+        std::cerr << "Model " << modelType << " not found" << std::endl;
+    }
 }
 
 
@@ -205,28 +219,42 @@ void ModelManager::drawMultipleFixModels(const ModelType &modelType, const vec3 
     }
 }
 
-void
-drawFixModel(const ModelType &modelType, const glimac::Program &program, const mat4 &projMatrix, GLint uMVPMatrix,
-             GLint uMVMatrix, GLint uNormalMatrix);
-
 void ModelManager::drawDoor(const vec3 &position, const DirectionType &directionType, const glimac::Program &program,
                             const mat4 &projMatrix, GLint uMVPMatrix, GLint uMVMatrix,
                             GLint uNormalMatrix)
 {
     ModelType modelType = DOOR_MODEL;
-
     try
     {
         Model &model = _models.at(modelType);
         try
         {
             ModelTransformation modelTransformation = _modelTransformations.getDoorModelTransformation(
-                    directionType);
-
-            mat4 MVMMatrix = applyModelTransformation(modelTransformation, position);
+                    DirectionType::NORTH);
+            mat4                MVMMatrix           = applyModelTransformation(modelTransformation, position);
             DrawUtils::setUniformMatrix(MVMMatrix, _camera.getViewMatrix(), projMatrix, uMVPMatrix, uMVMatrix,
                                         uNormalMatrix);
             model.draw(program);
+
+            modelTransformation = _modelTransformations.getDoorModelTransformation(DirectionType::SOUTH);
+            MVMMatrix           = applyModelTransformation(modelTransformation, position);
+            DrawUtils::setUniformMatrix(MVMMatrix, _camera.getViewMatrix(), projMatrix, uMVPMatrix, uMVMatrix,
+                                        uNormalMatrix);
+            model.draw(program);
+
+            modelTransformation = _modelTransformations.getDoorModelTransformation(DirectionType::EAST);
+            MVMMatrix           = applyModelTransformation(modelTransformation, position);
+            DrawUtils::setUniformMatrix(MVMMatrix, _camera.getViewMatrix(), projMatrix, uMVPMatrix, uMVMatrix,
+                                        uNormalMatrix);
+            model.draw(program);
+
+            modelTransformation = _modelTransformations.getDoorModelTransformation(DirectionType::WEST);
+            MVMMatrix           = applyModelTransformation(modelTransformation, position);
+            DrawUtils::setUniformMatrix(MVMMatrix, _camera.getViewMatrix(), projMatrix, uMVPMatrix, uMVMatrix,
+                                        uNormalMatrix);
+            model.draw(program);
+
+
         } catch (std::out_of_range &e)
         {
             std::cerr << "Model Transformation " << modelType << " not found" << std::endl;
@@ -238,6 +266,34 @@ void ModelManager::drawDoor(const vec3 &position, const DirectionType &direction
     }
 }
 
+void
+ModelManager::drawMonsterAttack(std::unique_ptr<Monster> &monster, const glimac::Program &program,
+                                const mat4 &projMatrix, GLint uMVPMatrix, GLint uMVMatrix, GLint uNormalMatrix)
+{
+    try
+    {
+        Model &model = _models.at(MONSTERS_ATTACK_MODEL);
+        try
+        {
+            ModelTransformation modelTransformation = _modelTransformations.getAttackModelTransformation(
+                    MONSTERS_ATTACK_MODEL,
+                    monster->getDirectionType());
+
+            mat4 MVMMatrix = applyModelTransformation(modelTransformation, monster->getPosition());
+            DrawUtils::setUniformMatrix(MVMMatrix, _camera.getViewMatrix(), projMatrix, uMVPMatrix, uMVMatrix,
+                                        uNormalMatrix);
+            model.draw(program);
+            monster->modelHasAttacked();
+        } catch (std::out_of_range &e)
+        {
+            std::cerr << "Model Transformation " << monster->getModelType() << " not found" << std::endl;
+        }
+
+    } catch (std::out_of_range &e)
+    {
+        std::cerr << "Model " << monster->getModelType() << " not found" << std::endl;
+    }
+}
 
 void
 ModelManager::drawAllModels(const glimac::Program &program, const mat4 &projMatrix, GLint uMVPMatrix, GLint uMVMatrix,
@@ -246,16 +302,24 @@ ModelManager::drawAllModels(const glimac::Program &program, const mat4 &projMatr
     ModelType modelType;
     try
     {
-        for (const auto &monster: _monstersToDraw)
+        for (auto &monster: _monstersToDraw)
         {
             if (monster != nullptr)
             {
                 modelType = monster->getModelType();
                 Model model = _models.at(modelType);
-                drawModel(modelType, monster->getPosition(), monster->getDirectionType(), program, projMatrix,
-                          uMVPMatrix, uMVMatrix, uNormalMatrix);
+                if (monster->getIsAttacking())
+                {
+                    drawModel(modelType, monster->getPosition(), monster->getDirectionType(), program, projMatrix,
+                              uMVPMatrix, uMVMatrix, uNormalMatrix);
+                    drawMonsterAttack(monster, program, projMatrix, uMVPMatrix, uMVMatrix, uNormalMatrix);
+                }
+                else
+                {
+                    drawModel(modelType, monster->getPosition(), monster->getDirectionType(), program, projMatrix,
+                              uMVPMatrix, uMVMatrix, uNormalMatrix);
+                }
             }
-
         }
 
         for (const auto &interactable: _interactableObjectsToDraw)
@@ -314,10 +378,10 @@ void ModelManager::drawInventory(const std::vector<ItemType> &items, const std::
 
         for (int i = 0; i < weaponsTypes.size(); ++i)
         {
-            modelType = Weapon::getInventoryModelTypeFromWeaponType(weaponsTypes[i]);
+            modelType = Weapon::getModelTypeFromWeaponType(weaponsTypes[i]);
             Model model = _models.at(modelType);
 
-            ModelTransformation modelTransformation = _modelTransformations.getModelTransformationForWeapon(
+            ModelTransformation modelTransformation = _modelTransformations.getModelTransformationForInventoryWeapon(
                     weaponsTypes[i], i);
 
             mat4 MVMMatrix = applyModelTransformation(modelTransformation, vec3(0, 0, 0));

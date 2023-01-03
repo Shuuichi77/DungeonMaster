@@ -9,10 +9,13 @@ class Character : public Interactable
 {
 
 protected:
-    int          _health;
-    int          _money;
-    unsigned int _attack;
-    int          _defense;
+    static constexpr unsigned NB_FRAME_TOTAL_FOR_ATTACK = 7;
+    int                       _health;
+    int                       _money;
+    unsigned int              _attack;
+    int                       _defense;
+    bool                      _isAttacking              = false;
+    unsigned int              currentNbFrameAttacking   = 0;
 
 public:
     ~Character() override = default;
@@ -29,4 +32,10 @@ public:
     virtual unsigned int getAttack() const { return _attack; }
 
     virtual bool loseHealth(int damage);
+
+    bool getIsAttacking() const { return _isAttacking; }
+
+    void modelHasAttacked();
+
+    void setIsAttacking(bool isAttacking) { _isAttacking = isAttacking; }
 };

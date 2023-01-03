@@ -44,7 +44,7 @@ void Menu::drawMenuInGame(const Player &player)
     _textManager.drawMenuInGame(player);
 }
 
-bool Menu::drawMenuEnding(bool gameWin, bool gameLost, bool &gameInterrupted)
+bool Menu::drawMenuEnding(bool gameWin, bool gameLost, bool &gameInterrupted, Music music)
 {
     if (gameInterrupted)
     {
@@ -54,6 +54,15 @@ bool Menu::drawMenuEnding(bool gameWin, bool gameLost, bool &gameInterrupted)
     bool replay   = false;
     bool quitLoop = false;
     _drawingProgram->programUse();
+
+    if (gameWin)
+    {
+        music.playWinMusic();
+    }
+    else
+    {
+        music.playLoseMusic();
+    }
     while (!quitLoop && !gameInterrupted)
     {
         SDL_Event e;

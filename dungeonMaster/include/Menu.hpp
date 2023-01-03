@@ -4,6 +4,7 @@
 #include "TextManager.hpp"
 #include "glimac/FilePath.hpp"
 #include "DrawingProgram.hpp"
+#include "Music.hpp"
 
 class Menu
 {
@@ -33,7 +34,7 @@ public:
 
     void drawMenuInGame(const Player &player);
 
-    bool drawMenuEnding(bool gameWin, bool gameLost, bool &gameInterrupted);
+    bool drawMenuEnding(bool gameWin, bool gameLost, bool &gameInterrupted, Music music);
 
     bool isButtonClicked(float x, float y, float leftBorder, float rightBorder, float topBorder, float bottomBorder);
 };

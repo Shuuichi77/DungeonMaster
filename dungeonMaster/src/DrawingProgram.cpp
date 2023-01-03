@@ -2,7 +2,6 @@
 
 #include "../include/DrawingProgram.hpp"
 #include "../include/TextureManager.hpp"
-#include "../include/ModelType.hpp"
 
 DrawingProgram::DrawingProgram(const FilePath &applicationPath, const std::string &vertexShader,
                                const std::string &fragmentShader, FreeflyCamera &camera, int windowWidth,
@@ -443,15 +442,15 @@ void DrawingProgram::changeAttributes()
 void DrawingProgram::drawModelDebug()
 {
     changeAttributes();
-    // -------------------------------------------------------------------------------------
+    // ------------------------------------------------------------------------------------     -
     mat4 MVMMatrix = mat4(1.0f);
 
-//     // Modèle fixe
-//    MVMMatrix = translate(MVMMatrix, vec3(
-//            _x + _tx,
-//            _y + _ty,
-//            _z + _tz
-//    ) - ModelTransformations::getGlobalTranslate());
+    // Modèle fixe
+    MVMMatrix = translate(MVMMatrix, vec3(
+            _x + _tx,
+            _y + _ty,
+            -_z + _tz
+    ) - ModelTransformations::getGlobalTranslate());
 
 //    // Modèle fixe mais MOBILE en fait
 //    MVMMatrix = translate(MVMMatrix, vec3(
@@ -461,33 +460,30 @@ void DrawingProgram::drawModelDebug()
 //    ) - ModelTransformations::getGlobalTranslate());
 //
     // Modèle mobile
-    vec3 camPos = _camera.getPosition();
-    MVMMatrix = translate(MVMMatrix, vec3(
-            camPos.x + _tx,
-            camPos.y + _ty,
-            camPos.z + _tz
-    ) - ModelTransformations::getGlobalTranslate());
+//    vec3 camPos = _camera.getPosition();
+//    MVMMatrix = translate(MVMMatrix, vec3(
+//            camPos.x + _tx,
+//            camPos.y + _ty,
+//            camPos.z + _tz
+//    ) - ModelTransformations::getGlobalTranslate());
+//
+//    MVMMatrix = rotate(MVMMatrix, radians(_rx), vec3(1, 0, 0));
+//    MVMMatrix = rotate(MVMMatrix, radians(_ry), vec3(0, 1, 0));
+//    MVMMatrix = rotate(MVMMatrix, radians(_rz), vec3(0, 0, 1));
 
-    MVMMatrix = rotate(MVMMatrix, radians(_rx), vec3(1, 0, 0));
-    MVMMatrix = rotate(MVMMatrix, radians(_ry), vec3(0, 1, 0));
-    MVMMatrix = rotate(MVMMatrix, radians(_rz), vec3(0, 0, 1));
-
-//    vec3 scaleVec = vec3(1. / _scaled) * ModelTransformations::getGlobalScale();
-//    MVMMatrix = scale(MVMMatrix, scaleVec);
-
-    MVMMatrix = scale(MVMMatrix, vec3(1. * _scaled));
+    vec3 scaleVec = vec3(1. / _scaled) * ModelTransformations::getGlobalScale();
+    MVMMatrix = scale(MVMMatrix, scaleVec);
     DrawUtils::setUniformMatrix(MVMMatrix, _camera.getViewMatrix(), _projMatrix, _uMVPMatrix, _uMVMatrix,
                                 _uNormalMatrix);
 
-    glBindTexture(GL_TEXTURE_2D, _textureManager.getTexture(TextureManager::MENU_WIN_TEXTURE));
-    glBindVertexArray(_vao);
-    glDrawArrays(GL_TRIANGLES, 0, 6);
-    glBindVertexArray(0);
+//    glBindTexture(GL_TEXTURE_2D, _textureManager.getTexture(TextureManager::MENU_WIN_TEXTURE));
+//    glBindVertexArray(_vao);
+//    glDrawArrays(GL_TRIANGLES, 0, 6);
+//    glBindVertexArray(0);
 
-//    _modelManager.drawModelDebug(KEY_MODEL, _camera.getPosition(), _program,
-//                                 _camera.getViewMatrix(), _projMatrix, _uMVPMatrix, _uMVMatrix, _uNormalMatrix,
-//                                 MVMMatrix);
-
+//    _modelManager.drawModelDebug(MONSTERS_ATTACK_MODEL, _camera.getPosition(), _program, _projMatrix, _uMVPMatrix,
+//                                 _uMVMatrix,
+//                                 _uNormalMatrix, MVMMatrix);
 }
 
 void DrawingProgram::drawMap(const std::vector<std::vector<MapElement>> &map, int width, int height)
@@ -497,7 +493,7 @@ void DrawingProgram::drawMap(const std::vector<std::vector<MapElement>> &map, in
     _interface.drawInterface();
     _modelManager.drawAllModels(_program, _projMatrix, _uMVPMatrix, _uMVMatrix, _uNormalMatrix);
     drawQuads(map, width, height);
-    drawModelDebug();
+//    drawModelDebug();
 }
 
 void DrawingProgram::drawQuads(const std::vector<std::vector<MapElement>> &map, int width, int height)
@@ -711,7 +707,7 @@ void DrawingProgram::drawMenuLose()
 
     ModelTransformation modelTransformation = _modelManager.getModelTransformations().getModelTransformation(
             MENU_MODEL);
-    
+
     mat4 MVMMatrix = _modelManager.applyModelTransformation(modelTransformation, _camera.getPosition());
     DrawUtils::setUniformMatrix(MVMMatrix, _camera.getViewMatrix(), _projMatrix, _uMVPMatrix, _uMVMatrix,
                                 _uNormalMatrix);

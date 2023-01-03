@@ -32,9 +32,15 @@ void Interface::drawInterface()
     // Models Inventory from here
     drawInventoryBackground();
 
-    _modelManager.drawFixModel(Weapon::getModelTypeFromWeaponType(_player.getCurrentWeapon()->getWeaponType()),
-                               _program,
-                               _projMatrix, _uMVPMatrix, _uMVMatrix, _uNormalMatrix);
+
+    _modelManager.drawWeapon(Weapon::getModelTypeFromWeaponType(_player.getCurrentWeapon()->getWeaponType()),
+                             _program, _projMatrix, _uMVPMatrix, _uMVMatrix, _uNormalMatrix,
+                             _player.getIsAttacking());
+
+    if (_player.getIsAttacking())
+    {
+        _player.modelHasAttacked();
+    }
 
     _modelManager.drawModel(MONEY_MODEL, _camera.getPosition(), DirectionType::NEUTRAL, _program, _projMatrix,
                             _uMVPMatrix, _uMVMatrix, _uNormalMatrix);

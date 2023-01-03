@@ -4,15 +4,10 @@
 #include <vector>
 #include "Character.hpp"
 #include "Weapon.hpp"
+#include "ModelTransformations.hpp"
+#include "Music.hpp"
 
 #include <memory>
-
-enum ItemType
-{
-    MILK,
-    HEALTH_POTION,
-    FAIRY,
-};
 
 class Player : public Character
 {
@@ -29,8 +24,6 @@ private:
     std::vector<ItemType>                _items;
     std::vector<std::unique_ptr<Weapon>> _weapons;
     std::vector<WeaponType>              _weaponsTypes;
-
-    void use(ItemType type);
 
     bool addItem(ItemType type);
 
@@ -63,7 +56,7 @@ public:
 
     bool loseHealth(int damage) override;
 
-    void useItem(unsigned int index);
+    void useItem(unsigned int index, Music music);
 
     void changeWeapon(unsigned int index);
 

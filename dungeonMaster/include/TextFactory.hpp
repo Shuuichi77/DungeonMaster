@@ -2,10 +2,8 @@
 
 #include "Text.hpp"
 
-
 enum TextType
 {
-    MENU_MESSAGE,
     MONEY_QTY_MESSAGE
 };
 
@@ -22,16 +20,11 @@ private:
     const unsigned int     windowWidth;
     const unsigned int     windowHeight;
 
-
     Text createMoneyQtyText(const std::string &text);
-
-    Text createMenuText();
 
 public:
     TextFactory(GLuint &vao, GLint &uModelMatrix, GLint &uTexture, Program &program,
                 const glimac::FilePath &applicationPath, unsigned int windowWidth, unsigned int windowHeight);
 
     Text createText(const TextType &textType, const std::string &text);
-
-
 };

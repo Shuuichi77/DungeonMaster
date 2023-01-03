@@ -1,6 +1,5 @@
 #include <iostream>
 #include "../include/ModelTransformations.hpp"
-#include "../include/Player.hpp"
 
 ModelTransformations::ModelTransformations()
 {
@@ -10,6 +9,10 @@ ModelTransformations::ModelTransformations()
     addSword01ModelTransformation();
     addSword02ModelTransformation();
     addSword03ModelTransformation();
+    addSword01AttackingModelTransformation();
+    addSword02AttackingModelTransformation();
+    addSword03AttackingModelTransformation();
+    addMonstersAttackModelTransformation();
     addHealthModelTransformation();
     addKeyModelTransformation();
     addMonster1ModelTransformation();
@@ -65,6 +68,35 @@ ModelTransformation ModelTransformations::getModelTransformation(const ModelType
             case DirectionType::SOUTH: // do nothing
                 break;
         }
+    }
+
+    return modelTransformation;
+}
+
+ModelTransformation
+ModelTransformations::getAttackModelTransformation(const ModelType &modelType, const DirectionType &directionType)
+{
+    ModelTransformation modelTransformation = _attributes.at(modelType);
+
+    switch (directionType)
+    {
+        case DirectionType::NORTH: //
+            modelTransformation.translation += vec3(0.f, 0.f, -0.4f);
+            break;
+
+        case DirectionType::SOUTH: //
+            modelTransformation.translation += vec3(0.f, 0.f, 0.4f);
+            break;
+        case DirectionType::EAST: //
+            modelTransformation.translation += vec3(0.4f, 0.f, 0.f);
+            break;
+
+        case DirectionType::WEST: //
+            modelTransformation.translation += vec3(-0.4f, 0.f, 0.f);
+            break;
+
+        case DirectionType::NEUTRAL: // do nothing
+            break;
     }
 
     return modelTransformation;
@@ -179,6 +211,44 @@ void ModelTransformations::addSword03ModelTransformation()
     addModelTransformation(MASTER_SWORD_MODEL, modelTransformation);
 }
 
+void ModelTransformations::addSword01AttackingModelTransformation()
+{
+    ModelTransformation modelTransformation;
+
+    modelTransformation.translation = glm::vec3(0.33, -0.02, -0.65) - getGlobalTranslate();
+    modelTransformation.rotation    = glm::vec3(-143, -19, 39);
+    modelTransformation.scale       = glm::vec3(1. / 2.f) * getGlobalScale();
+    modelTransformation.isFix       = true;
+
+    addModelTransformation(WOODEN_SWORD_ATTACKING_MODEL, modelTransformation);
+}
+
+
+void ModelTransformations::addSword02AttackingModelTransformation()
+{
+    ModelTransformation modelTransformation;
+
+    modelTransformation.translation = glm::vec3(0.33, -0.02, -0.65) - getGlobalTranslate();
+    modelTransformation.rotation    = glm::vec3(-143, -19, 39);
+    modelTransformation.scale       = glm::vec3(1. / 2.f) * getGlobalScale();
+    modelTransformation.isFix       = true;
+
+    addModelTransformation(ROYAL_SWORD_ATTACKING_MODEL, modelTransformation);
+}
+
+
+void ModelTransformations::addSword03AttackingModelTransformation()
+{
+    ModelTransformation modelTransformation;
+
+    modelTransformation.translation = glm::vec3(0.33, -0.02, -0.65) - getGlobalTranslate();
+    modelTransformation.rotation    = glm::vec3(-143, -19, 39);
+    modelTransformation.scale       = glm::vec3(1. / 175.f) * getGlobalScale();
+    modelTransformation.isFix       = true;
+
+    addModelTransformation(MASTER_SWORD_ATTACKING_MODEL, modelTransformation);
+}
+
 void ModelTransformations::addHealthModelTransformation()
 {
     ModelTransformation modelTransformation;
@@ -237,6 +307,17 @@ void ModelTransformations::addMonster3AModelTransformation()
     modelTransformation.rotation    = glm::vec3(0.f, 30.f, 0.f);
     modelTransformation.scale       = glm::vec3(1. / 15.f) * getGlobalScale();
     addModelTransformation(MONSTER_03_MODEL, modelTransformation);
+}
+
+
+void ModelTransformations::addMonstersAttackModelTransformation()
+{
+    ModelTransformation modelTransformation;
+
+    modelTransformation.translation = glm::vec3(0.f, 0.4f, 0.f) - getGlobalTranslate();
+    modelTransformation.rotation    = glm::vec3(0.f, 0.f, 0.f);
+    modelTransformation.scale       = glm::vec3(1. / 6.f) * getGlobalScale();
+    addModelTransformation(MONSTERS_ATTACK_MODEL, modelTransformation);
 }
 
 // EXIT
@@ -380,11 +461,10 @@ ModelTransformation ModelTransformations::getModelTransformationForItem(ItemType
 }
 
 ModelTransformation
-ModelTransformations::getModelTransformationForWeapon(WeaponType weaponType, unsigned int index)
+ModelTransformations::getModelTransformationForInventoryWeapon(WeaponType weaponType, unsigned int index) const
 {
     ModelTransformation modelTransformation;
-
-    float ty;
+    float               ty;
 
     switch (weaponType)
     {
@@ -413,39 +493,6 @@ ModelTransformations::getModelTransformationForWeapon(WeaponType weaponType, uns
 
     return modelTransformation;
 }
-
-//ModelTransformation ModelTransformations::getModelTransformationForWeapon(WeaponType weaponType, unsigned int index)
-//{
-//    ModelTransformation modelTransformation;
-//
-//    float ty;
-//
-//    switch (weaponType)
-//    {
-//        case WeaponType::WOODEN_SWORD: //
-//            ty                  = 0.02;
-//            modelTransformation = getModelTransformation(WeaponType::WOODEN_SWORD);
-//            break;
-////        case WeaponType //
-////            ty = 0.031;
-////            modelTransformation = getModelTransformation(HEALTH_POTION_MODEL);
-////            break;
-////
-////        case ItemType::MILK: //
-////            ty = 0.0275
-////            ty                  = 0.026;
-////            modelTransformation = getModelTransformation(MILK_MODEL);
-////            break;
-////        case ItemType::FAIRY: //
-////            ty = 0.0245
-////            modelTransformation = getModelTransformation(FAIRY_MODEL);
-////            break;
-//    }
-//
-////    modelTransformation.translation += glm::vec3((float) i * tx, -((float) j * ty), 0);
-////
-////    return modelTransformation;
-//}
 
 
 // ------------------------------ REFERENCE ------------------------------

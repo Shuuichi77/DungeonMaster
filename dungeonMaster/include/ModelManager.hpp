@@ -44,15 +44,18 @@ private:
                   const mat4 &projMatrix, GLint uMVPMatrix, GLint uMVMatrix,
                   GLint uNormalMatrix);
 
-    // For Interface
-    void drawFixModel(const ModelType &modelType, const glimac::Program &program, const mat4 &projMatrix,
+    void
+    drawMonsterAttack(std::unique_ptr<Monster> &monster, const glimac::Program &program, const mat4 &projMatrix,
                       GLint uMVPMatrix, GLint uMVMatrix, GLint uNormalMatrix);
+
+    // For Interface
+    void drawWeapon(const ModelType &modelType, const glimac::Program &program, const mat4 &projMatrix,
+                    GLint uMVPMatrix, GLint uMVMatrix, GLint uNormalMatrix, bool isAttacking);
 
     // For Interface
     void drawMultipleFixModels(const ModelType &modelType, const vec3 &position, const Program &program,
                                const mat4 &projMatrix, GLint uMVPMatrix, GLint uMVMatrix, GLint uNormalMatrix,
-                               float space,
-                               unsigned int qty);
+                               float space, unsigned int qty);
 
     // For Interface
     void drawInventory(const std::vector<ItemType> &items, const std::vector<WeaponType> &weaponsTypes,

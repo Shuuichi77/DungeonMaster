@@ -1,4 +1,7 @@
 #include "../include/FreeflyCamera.hpp"
+#include "../include/Utils.hpp"
+
+#include <iostream>
 
 void FreeflyCamera::computeDirectionVectors()
 {
@@ -68,8 +71,95 @@ void FreeflyCamera::setPosition(glm::vec3 position)
     _position = glm::vec3(position.x, position.y, position.z);
 }
 
-void FreeflyCamera::setCameraDirection(DirectionType directionType)
+bool FreeflyCamera::setDirectionTypeWithMap(const std::vector<std::vector<MapElement>> &map)
 {
-    _cameraDirection = directionType;
+    int i = Utils::floatToAbsInt(_position.z);
+    int j = Utils::floatToAbsInt(_position.x);
+
+    if (i == 0)
+    {
+        if (map[i + 1][j] != MapElement::WALL)
+        {
+            _cameraDirection = DirectionType::NORTH;
+        }
+        else if (map[i][j + 1] != MapElement::WALL)
+        {
+            _cameraDirection = DirectionType::EAST;
+        }
+        else if (map[i][j - 1] != MapElement::WALL)
+        {
+            _cameraDirection = DirectionType::WEST;
+        }
+        else
+        {
+            return false;
+        }
+
+        return true;
+    }
+
+    else if (i == map.size() - 1)
+    {
+        if (map[i - 1][j] != MapElement::WALL)
+        {
+            _cameraDirection = DirectionType::SOUTH;
+        }
+        else if (map[i][j + 1] != MapElement::WALL)
+        {
+            _cameraDirection = DirectionType::EAST;
+        }
+        else if (map[i][j - 1] != MapElement::WALL)
+        {
+            _cameraDirection = DirectionType::WEST;
+        }
+        else
+        {
+            return false;
+        }
+    }
+
+    else if (j == 0)
+    {
+        if (map[i + 1][j] != MapElement::WALL)
+        {
+            _cameraDirection = DirectionType::NORTH;
+        }
+        else if (map[i - 1][j] != MapElement::WALL)
+        {
+            _cameraDirection = DirectionType::SOUTH;
+        }
+        else if (map[i][j + 1] != MapElement::WALL)
+        {
+            _cameraDirection = DirectionType::EAST;
+        }
+        else
+        {
+            return false;
+        }
+    }
+
+    else if (j == map[i].size() - 1)
+    {
+        if (map[i + 1][j] != MapElement::WALL)
+        {
+            _cameraDirection = DirectionType::NORTH;
+        }
+        else if (map[i - 1][j] != MapElement::WALL)
+        {
+            _cameraDirection = DirectionType::SOUTH;
+        }
+        else if (map[i][j - 1] != MapElement::WALL)
+        {
+            _cameraDirection = DirectionType::WEST;
+        }
+        else
+        {
+            return false;
+        }
+
+        return true;
+    }
+
+    return false;
 }
 

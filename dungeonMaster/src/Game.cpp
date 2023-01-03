@@ -19,7 +19,8 @@ Game::Game(glimac::FilePath filePath, unsigned int windowHeight)
         , _windowHeight(windowHeight)
         , _windowManager(windowHeight * 4 / 3, windowHeight, "Dungeon Master")
         , _cameraManager(_camera, _windowManager)
-        , _mapName { DEFAULT_MAP } {}
+        , _mapName { DEFAULT_MAP }
+        , _music { filePath } {}
 
 
 Game::Game(glimac::FilePath filePath, unsigned int windowHeight, std::string mapName)
@@ -29,7 +30,8 @@ Game::Game(glimac::FilePath filePath, unsigned int windowHeight, std::string map
         , _windowHeight(windowHeight)
         , _windowManager(windowHeight * 4 / 3, windowHeight, "Dungeon Master")
         , _cameraManager(_camera, _windowManager)
-        , _mapName { std::move(mapName) } {}
+        , _mapName { std::move(mapName) }
+        , _music { filePath } {}
 
 
 int Game::initGlew()
@@ -53,7 +55,7 @@ int Game::initGlew()
     return EXIT_SUCCESS;
 }
 
-void Game::initColors(int maxColor)
+void Game::initMapElementColors(int maxColor)
 {
     if (maxColor != 255)
     {
@@ -64,7 +66,6 @@ void Game::initColors(int maxColor)
         ENTRY_COLOR /= 255;
         EXIT_COLOR /= 255;
     }
-
 }
 
 MapElement Game::getMapElementFromColor(const vec3 &color)
@@ -134,7 +135,7 @@ std::vector<std::vector<MapElement>> Game::readMap(const std::string &mapFile,
 
     getline(input, line);
     int maxColor                           = std::stoi(line);
-    initColors(maxColor);
+    initMapElementColors(maxColor);
 
     std::vector<std::vector<MapElement>> map;
     for (int                             i = 0; i < mapHeight; ++i)
@@ -245,8 +246,6 @@ void Game::initMap()
         _textureManager = Utils::make_unique<TextureManager>(_applicationPath);
     }
 
-    DirectionType startingDir = DirectionType::NORTH;
-    _camera.setCameraDirection(startingDir);
 
     std::vector<std::unique_ptr<InteractableObject>> interactableObjects;
     std::vector<std::unique_ptr<Monster>>            monsters;
@@ -254,9 +253,15 @@ void Game::initMap()
     string mapFile = readDungeonFile(_mapName, interactableObjects, monsters);
     _map = readMap(mapFile, interactableObjects);
 
+    glm::vec3 cameraPosition = _camera.getPosition();
+    if (!_camera.setDirectionTypeWithMap(_map))
+    {
+        std::cerr << "Error: camera not in border or is stuck in a corner" << std::endl;
+        exit(EXIT_FAILURE);
+    }
     _characterManager = Utils::make_unique<CharacterManager>(_camera.getPosition(), _camera.getCameraDirection(),
                                                              _windowWidth, _windowHeight, interactableObjects,
-                                                             monsters);
+                                                             monsters, _music);
 }
 
 void Game::initPtr()
@@ -323,7 +328,11 @@ void Game::createGame()
 {
     initMap();
     initPtr();
+
+    _music.playMenuMusic();
     _menu->drawMenuStarting(_gameInterrupted);
+    _music.playSoundStartGame();
+    _music.playInGameMusic();
 
     if (_gameLost)
     {
@@ -334,21 +343,29 @@ void Game::createGame()
 
 int Game::run()
 {
+
     if (initGlew())
     {
         return EXIT_FAILURE;
     }
 
+    if (!_music.initMusic())
+    {
+        return false;
+    }
+
     createGame();
+
     while (!_gameInterrupted)
     {
         loop();
-        if (_menu->drawMenuEnding(gameWin(), _gameLost, _gameInterrupted))
+        if (_menu->drawMenuEnding(gameWin(), _gameLost, _gameInterrupted, _music))
         {
             createGame();
         }
     }
 
+    _music.freeMusics();
     _textureManager->freeTextures();
 
     return EXIT_SUCCESS;

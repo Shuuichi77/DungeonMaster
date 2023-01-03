@@ -1,13 +1,13 @@
-#include <iostream>
 #include <algorithm>
 #include "../include/CharacterManager.hpp"
 
 CharacterManager::CharacterManager(const glm::vec3 &playerPosition, const DirectionType &playerDirectionType,
                                    unsigned int windowWidth, unsigned int windowHeight,
                                    std::vector<std::unique_ptr<InteractableObject>> &interableObjects,
-                                   std::vector<std::unique_ptr<Monster>> &monsters)
+                                   std::vector<std::unique_ptr<Monster>> &monsters, Music &music)
         : _player(playerPosition, playerDirectionType)
         , _inventoryCoordinates(windowWidth, windowHeight)
+        , _music(music)
 {
     _interactableObjects = std::move(interableObjects);
     _monsters            = std::move(monsters);
@@ -32,6 +32,9 @@ void CharacterManager::leftClick(const DirectionType &playerDirectionType,
                                    {
                                        if (monster != nullptr && monster->isClicked(coordsClicked))
                                        {
+                                           _player.setIsAttacking(true);
+                                           _music.playPlayerHit();
+
                                            if (monster->loseHealth(_player.getAttack()))
                                            {
                                                _player.addMonsterKilled();
@@ -51,6 +54,7 @@ void CharacterManager::leftClick(const DirectionType &playerDirectionType,
                                                       interactableObject->isClicked(coordsClicked) &&
                                                       interactableObject->interactWithPlayer(_player))
                                                   {
+                                                      _music.playSoundSuccess();
                                                       return true;
                                                   }
 
@@ -65,9 +69,10 @@ bool CharacterManager::inventoryIsClicked(const glm::vec2 &mousePosition, Freefl
 
     switch (_inventoryTypeNumber.first)
     {
-        case InventoryCoordinatesType::ITEM:_player.useItem(_inventoryTypeNumber.second);
+        case InventoryCoordinatesType::ITEM:_player.useItem(_inventoryTypeNumber.second, _music);
             return true;
         case InventoryCoordinatesType::WEAPON:_player.changeWeapon(_inventoryTypeNumber.second);
+            _music.changeWeapon();
             return true;
         case InventoryCoordinatesType::LEFT_ARROW:camera.rotateLeft(90.f);
             return true;
@@ -103,7 +108,7 @@ bool CharacterManager::updateMonsters(const std::vector<std::vector<MapElement>>
     {
         for (auto &monster: _monsters)
         {
-            if (monster != nullptr && monster->update(_player, map, _monsters, _interactableObjects))
+            if (monster != nullptr && monster->update(_player, map, _monsters, _interactableObjects, _music))
             {
                 return true;
             }

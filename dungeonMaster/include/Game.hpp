@@ -9,6 +9,7 @@
 #include "Interface.hpp"
 #include "CharacterManager.hpp"
 #include "Menu.hpp"
+#include "Music.hpp"
 
 using namespace glimac;
 using namespace glm;
@@ -25,6 +26,7 @@ private:
     unsigned int                _nbMoneyNeededToFinishGame       = 0;
     unsigned int                _nbMonsterKillNeededToFinishGame = 0;
 
+    Music                                _music;
     FreeflyCamera                        _camera;
     glimac::FilePath                     _applicationPath;
     unsigned int                         _windowWidth;
@@ -66,6 +68,8 @@ private:
 
     bool gameWin() const;
 
+    void initMapElementColors(int maxColor);
+
 public:
     explicit Game(glimac::FilePath filePath, unsigned int windowHeight);
 
@@ -74,8 +78,6 @@ public:
     ~Game() = default;;
 
     int run();
-
-    void initColors(int maxColor);
 
     void createGame();
 };

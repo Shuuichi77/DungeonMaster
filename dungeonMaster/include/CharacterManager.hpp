@@ -14,6 +14,7 @@
 class CharacterManager
 {
 private:
+    Music                                            &_music;
     Player                                           _player;
     std::vector<std::unique_ptr<Monster>>            _monsters;
     std::vector<std::unique_ptr<InteractableObject>> _interactableObjects;
@@ -28,7 +29,7 @@ public:
     explicit CharacterManager(const glm::vec3 &playerPosition, const DirectionType &playerDirectionType,
                               unsigned int windowWidth, unsigned int windowHeight,
                               std::vector<std::unique_ptr<InteractableObject>> &interableObjects,
-                              std::vector<std::unique_ptr<Monster>> &monsters);
+                              std::vector<std::unique_ptr<Monster>> &monsters, Music &music);
 
     ~CharacterManager() = default;
 

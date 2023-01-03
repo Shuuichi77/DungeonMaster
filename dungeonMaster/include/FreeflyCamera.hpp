@@ -2,7 +2,9 @@
 
 #include "glimac/glm.hpp"
 #include <GL/glew.h>
+#include <vector>
 #include "DirectionType.hpp"
+#include "MapElement.hpp"
 
 class FreeflyCamera
 {
@@ -38,7 +40,7 @@ private:
 
     void setPosition(glm::vec3 position);
 
-    void setCameraDirection(DirectionType directionType);
+    bool setDirectionTypeWithMap(const std::vector<std::vector<MapElement>> &map);
 
     friend class Game;
 };
