@@ -37,13 +37,14 @@ récupérer de meilleures armes que l'épée en bois donnée au début du jeu.
 ## Comment jouer
 
 Le personnage se déplace avec z q s d, et peut effectuer une rotation sur la gauche ou la droite avec respectivement a
-et e, ou bien en utilisant les flèches directionnelles présentes au milieu de son inventaire. Lorsque le personne trouve
-des trésors il peut les utiliser en cliquant dessus dans son inventaire.  
+et e, ou bien en utilisant les flèches directionnelles présentes au milieu de son inventaire.  
+Lorsque le personne trouve des trésors, il peut les ouvrir avec un clic gauche et les utiliser en cliquant direction
+dessus dans son inventaire (ou en faisant une clique gauche devant une porte pour la clé).  
 Il peut trouver des trésors pouvant le soigner (lait, potion, fée pouvant même le ressuciter en cas de mort), ou bien 2
-armes : l'épée royale et la master sword.  
-Enfin, lorsque le joueur se trouve devant un ennemi, il peut l'attaqur avec le clic gauche.
+armes : l'épée royale et la master sword (également l'épée en bois, mais celle-ci est fournie au début du jeu).   
+Enfin, lorsque le joueur se trouve devant un ennemi, il peut l'attaquer avec le clic gauche.
 
-
+Des images du jeu sont disponibles dans le dossier ./doc/images/
 
 
 

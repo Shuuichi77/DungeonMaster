@@ -5,9 +5,7 @@ int main(int argc, char **argv)
     FilePath filePath(argv[0]);
     if (argc == 2)
     {
-//        Game game(filePath, 600, argv[1]);
-//        Game game(filePath, 800, argv[1]);
-        Game game(filePath, 1200, argv[1]);
+        Game game(filePath, 800, argv[1]);
         return game.run();
     }
 
@@ -19,9 +17,7 @@ int main(int argc, char **argv)
 
     else
     {
-//        Game game(filePath, 600);
-//        Game game(filePath, 800);
-        Game game(filePath, 1200);
+        Game game(filePath, 800);
         return game.run();
     }
 }

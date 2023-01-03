@@ -23,10 +23,13 @@ dungeonMaster
 ├── CMakeLists.txt  
 └── main.cpp
 
-## 3. Fonctionnalités implémentées
+## 3. Fonctionnalités implémentées (ou non)
 
 - Le projet peut lire les images .ppm pour charger un niveau. Cependant, seules les formats ASCII (P3) sont supportés.
-  Les formats binaire (P6) ne sont pas supportés.
+  Les formats binaire (P6) ne sont pas supportés. Pour la lecture des fichiers, se référer à la classe Game. (les
+  fichiers ont été crées avec GIMP à partir de fichiers .png)
+
+
 - Le projet peut lire les fichiers .txt pour charger les trésors et ennemis. Ils se présentes sous la forme suivante :
     - "#" Dungeon Zilda &emsp;(nom du projet)
     - fichier.ppm &emsp;&emsp;&emsp;&emsp;(nom du fichier .ppm à charger)
@@ -66,16 +69,18 @@ dungeonMaster
 - 2 niveaux sont disponibles dans le dossier maps (manque de temps d'en faire plus malheureusement)
 
 
-- Le joueur et les monstres possèdent pv, attaque et défense
+- Le joueur et les monstres possèdent pv, attaque et défense de base, modifiables dans les classes Player et Monster (ou
+  dans le fichier .txt pour les monstres).
 
 
 - Les monstres se déplacent en ligne dès qu'ils ont le joueur en ligne de mire. Cependant s'il y a de l'eau, ils
-  s'arrêteront devant. Lorsque le joueur est à portée, ils attaqueront à intervalle régulier.
+  s'arrêteront devant. Lorsque le joueur est à portée, ils attaqueront à intervalle régulier (toutes les 1 seconde,
+  modifiable dans la classe ChronoBetweenActions). Les monstres attaquent ainsi tous à la même allure.
 
 
 - Tous les modèles des monstres se trouvent dans le dossier /assets/models. Il n'est pas nécessaire de fournir le modèle
-  3D dans le fichier .txt. Pour en rajouter, il faudra rajouter un enum dans la classe ModelType.hpp et ajouter sa
-  translation/rotation/scale dans la classe ModelTransformations.
+  3D dans le fichier .txt. Pour en rajouter, il faudra rajouter un enum dans la classe ModelType.hpp et le chargement de
+  celui-ci dans la classe ModelManager.
 
 
 - Les murs/sols sont des quads représentés par 2 triangles.
@@ -83,11 +88,20 @@ dungeonMaster
 
 - La carte n'est pas affichée en temps réel durant la partie.
 
-- Les portes bloquent toutes les orientations lorsqu'elles sont présentes sur la carte. Il n'y a donc pas ce problème d'
-  orientation des portes (et ceux des monstres/trésors sont à spécifier dans le fichier .txt)
+
+- Les portes bloquent toutes les orientations lorsqu'elles sont présentes sur la carte. Il n'y a donc pas ce problème
+  d'orientation des portes (et l'orientation des monstres/trésors est à spécifier dans le fichier .txt). Lorsqu'une clé
+  ouvre une porte, la porte disparaît et toutes les orientations se débloquent.
+
+
+- Les niveaux ne peuvent pas s'enchaîner (il n'y a qu'1 étage par niveau)
 
 ## 4. Fonctionnalités supplémentaires
 
 - Une musique et des bruitages sont ajoutées (d'où la nécessité de la librairie SDL_mixer)
 
 - Les monstres et le joueur ont des animations lorsqu'ils attaquent
+
+- Le bouton Retry ne fonctionne malheureusement pas en cas de mort (problème d'orientation lors de la mort et la
+  réapparition, le bouton marche seulement si le joueur était orienté vers le nord, vers -z).
+
