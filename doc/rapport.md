@@ -1,5 +1,9 @@
 # Projet de Synthèse d'Images avancées
 
+## M2 - VILAYVANH Johnson
+
+### https://github.com/Shuuichi77/DungeonMaster
+
 ## 1. Introduction
 
 Les règles du jeu et les librairies nécessaires au lancement du jeu sont présentes dans le README.md à la racine du
